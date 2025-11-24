@@ -1,0 +1,16 @@
+# 標準的なFlutterプロジェクトで無視すべき項目
+
+.dart_tool/
+.idea/
+.packages
+build/
+*.iml
+pubspec.lock # プロジェクトやチームの方針によってはコミットする場合もあります
+
+# コード生成ライブラリによる生成ファイル (例)
+# json_serializable, freezed, riverpod_generatorなど
+*.g.dart
+*.freezed.dart
+*.gen.dart
+*.
+*.transitive_digest

@@ -26,8 +26,21 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
+  Stream<List<ActivityPoint>> watchActivityPoints() {
+    return (select(activityPoints)).watch();
+  }
+
   Future<List<ActivityPoint>> getAllActivityPoints() =>
       select(activityPoints).get();
+
+  Future<void> insertActivityPoint(ActivityPoint activityPoint) =>
+      into(activityPoints).insert(activityPoint);
+
+  // Future<void> updateActivityPoint(ActivityPoint activityPoint) =>
+  //     update(activityPoints).replace(activityPoint);
+
+  // Future<void> deleteActivityPoint(ActivityPoint activityPoint) =>
+  //     delete(activityPoints).delete(activityPoint);
 }
 
 LazyDatabase _openConnection() {

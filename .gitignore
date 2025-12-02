@@ -5,7 +5,6 @@
 .packages
 build/
 *.iml
-pubspec.lock # プロジェクトやチームの方針によってはコミットする場合もあります
 
 # コード生成ライブラリによる生成ファイル (例)
 # json_serializable, freezed, riverpod_generatorなど
@@ -14,3 +13,4 @@ pubspec.lock # プロジェクトやチームの方針によってはコミッ�
 *.gen.dart
 *.
 *.transitive_digest
+.dart_tool/package_config.json

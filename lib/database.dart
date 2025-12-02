@@ -36,6 +36,13 @@ class AppDatabase extends _$AppDatabase {
   Future<void> insertActivityPoint(ActivityPoint activityPoint) =>
       into(activityPoints).insert(activityPoint);
 
+  Future<int> getMaxId() async {
+    final query = selectOnly(activityPoints)
+      ..addColumns([activityPoints.id.max()]);
+    final result = await query.getSingleOrNull();
+    return result?.read(activityPoints.id.max()) ?? 0;
+  }
+
   // Future<void> updateActivityPoint(ActivityPoint activityPoint) =>
   //     update(activityPoints).replace(activityPoint);
 

@@ -78,8 +78,8 @@ class Home extends StatelessWidget {
               child: const Text('キャンセル'),
             ),
             TextButton(
-              onPressed: () {
-                database.insertActivityPoint(
+              onPressed: () async {
+                await database.insertActivityPoint(
                   ActivityPoint(
                     id: maxId,
                     date: DateTime.now(),
@@ -92,6 +92,10 @@ class Home extends StatelessWidget {
                     points: int.parse(addPointsController.text),
                   ),
                 );
+                addTitleController.clear();
+                addDescriptionController.clear();
+                addPointsController.clear();
+                Navigator.of(context).pop();
               },
               child: const Text('追加'),
             ),

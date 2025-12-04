@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:practice/database.dart';
+import 'package:practice/dialogs/show_add_activity_point_dialog.dart';
 
 class Home extends StatelessWidget {
-  Home({super.key, required this.database});
+  const Home({super.key, required this.database});
 
   final AppDatabase database;
-
-  final TextEditingController addPointsController = TextEditingController();
-  final TextEditingController addTitleController = TextEditingController();
-  final TextEditingController addDescriptionController =
-      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +15,11 @@ class Home extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              _showAddActivityPointDialog(context);
+              showDialog(
+                context: context,
+                builder: (BuildContext context) =>
+                    AddActivityPointDialog(database: database),
+              );
             },
             icon: const Icon(Icons.add),
           ),
@@ -43,65 +43,6 @@ class Home extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-
-  Future<void> _showAddActivityPointDialog(BuildContext context) async {
-    final maxId = (await database.getMaxId()) + 1;
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('ポイント追加'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: const InputDecoration(labelText: 'タイトル'),
-                controller: addTitleController,
-              ),
-              TextField(
-                decoration: const InputDecoration(labelText: '説明'),
-                controller: addDescriptionController,
-              ),
-              TextField(
-                decoration: const InputDecoration(labelText: 'ポイント'),
-                controller: addPointsController,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('キャンセル'),
-            ),
-            TextButton(
-              onPressed: () async {
-                await database.insertActivityPoint(
-                  ActivityPoint(
-                    id: maxId,
-                    date: DateTime.now(),
-                    time: DateTime.now(),
-                    createdAt: DateTime.now(),
-                    updatedAt: DateTime.now(),
-                    deletedAt: DateTime.now(),
-                    title: addTitleController.text,
-                    description: addDescriptionController.text,
-                    points: int.parse(addPointsController.text),
-                  ),
-                );
-                addTitleController.clear();
-                addDescriptionController.clear();
-                addPointsController.clear();
-                Navigator.of(context).pop();
-              },
-              child: const Text('追加'),
-            ),
-          ],
-        );
-      },
     );
   }
 }

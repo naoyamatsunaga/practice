@@ -46,8 +46,8 @@ class AppDatabase extends _$AppDatabase {
   // Future<void> updateActivityPoint(ActivityPoint activityPoint) =>
   //     update(activityPoints).replace(activityPoint);
 
-  // Future<void> deleteActivityPoint(ActivityPoint activityPoint) =>
-  //     delete(activityPoints).delete(activityPoint);
+  Future<void> deleteActivityPoint(ActivityPoint activityPoint) =>
+      delete(activityPoints).delete(activityPoint);
 }
 
 LazyDatabase _openConnection() {

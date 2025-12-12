@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:practice/activity_point_card.dart';
 import 'package:practice/database.dart';
 import 'package:practice/dialogs/show_add_activity_point_dialog.dart';
 
@@ -34,10 +35,10 @@ class Home extends StatelessWidget {
           return ListView.builder(
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(snapshot.data![index].title),
-                subtitle: Text(snapshot.data![index].description),
-                trailing: Text(snapshot.data![index].points.toString()),
+              return ActivityPointCard(
+                points: snapshot.data![index].points,
+                title: snapshot.data![index].title,
+                description: snapshot.data![index].description,
               );
             },
           );

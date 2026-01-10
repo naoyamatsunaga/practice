@@ -37,7 +37,7 @@ class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
             children: [
               TextFormField(
                 decoration: const InputDecoration(labelText: 'タイトル'),
-                controller: _titleController,
+                controller: TextEditingController(text: 'test_title'),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'タイトルを入力してください';
@@ -47,7 +47,7 @@ class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: '説明'),
-                controller: _descriptionController,
+                controller: TextEditingController(text: 'test_description'),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return '説明を入力してください';
@@ -57,7 +57,7 @@ class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'ポイント'),
-                controller: _pointsController,
+                controller: TextEditingController(text: '0'),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
@@ -109,9 +109,12 @@ class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         deletedAt: DateTime.now(),
-        title: _titleController.text,
-        description: _descriptionController.text,
-        points: int.parse(_pointsController.text),
+        title: 'test_title$nextId',
+        description: 'test_description$nextId',
+        points: nextId,
+        // title: _titleController.text,
+        // description: _descriptionController.text,
+        // points: int.parse(_pointsController.text),
       ),
     );
     _titleController.clear();

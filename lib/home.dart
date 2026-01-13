@@ -36,9 +36,8 @@ class Home extends StatelessWidget {
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
               return ActivityPointCard(
-                points: snapshot.data![index].points,
-                title: snapshot.data![index].title,
-                description: snapshot.data![index].description,
+                activityPoint: snapshot.data![index],
+                database: database,
               );
             },
           );

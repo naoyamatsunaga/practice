@@ -13,18 +13,6 @@ class Home extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Activity Points'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) =>
-                    AddActivityPointDialog(database: database),
-              );
-            },
-            icon: const Icon(Icons.add),
-          ),
-        ],
       ),
       body: StreamBuilder<List<ActivityPoint>>(
         stream: database.watchActivityPoints(),
@@ -43,6 +31,16 @@ class Home extends StatelessWidget {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) =>
+                AddActivityPointDialog(database: database),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

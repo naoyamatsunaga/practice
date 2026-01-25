@@ -14,11 +14,13 @@ class AddActivityPointDialog extends StatefulWidget {
 class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _pointsController = TextEditingController();
 
   @override
   void dispose() {
     _titleController.dispose();
+    _descriptionController.dispose();
     _pointsController.dispose();
     super.dispose();
   }
@@ -39,6 +41,16 @@ class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'タイトルを入力してください';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: '説明'),
+                controller: _descriptionController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '説明を入力してください';
                   }
                   return null;
                 },
@@ -98,11 +110,12 @@ class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
         updatedAt: DateTime.now(),
         deletedAt: DateTime.now(),
         title: _titleController.text,
-        description: '', // 空文字列で固定
+        description: _descriptionController.text,
         points: int.parse(_pointsController.text),
       ),
     );
     _titleController.clear();
+    _descriptionController.clear();
     _pointsController.clear();
     if (mounted) {
       Navigator.of(context).pop();

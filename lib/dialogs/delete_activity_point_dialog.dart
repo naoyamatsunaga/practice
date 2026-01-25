@@ -4,29 +4,28 @@ import 'package:practice/database.dart';
 class DeleteActivityPointDialog extends StatelessWidget {
   const DeleteActivityPointDialog({
     super.key,
-    //required this.database,
+    required this.activityPoint,
+    required this.database,
   });
 
-  //final AppDatabase database;
-  //final ActivityPoint activityPoint
+  final ActivityPoint activityPoint;
+  final AppDatabase database;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('ポイント削除'),
-      content: const Column(
+      content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('この項目を削除しますか？'),
-          SizedBox(height: 12),
+          const Text('この項目を削除しますか？'),
+          const SizedBox(height: 12),
           Text(
-            // activityPoint.title,
-            'test_title',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            activityPoint.title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          // Text('ポイント: ${activityPoint.points}'),
-          Text('ポイント: 100'),
+          Text('ポイント: ${activityPoint.points}'),
         ],
       ),
       actions: [
@@ -36,12 +35,13 @@ class DeleteActivityPointDialog extends StatelessWidget {
         ),
         TextButton(
           onPressed: () async {
-            // await database
-            //     .delete(database.activityPoints)
-            //     .delete(activityPoint);
-            // if (context.mounted) {
-            //   Navigator.of(context).pop();
-            // }
+            // 削除処理を実行
+            await database.deleteActivityPoint(activityPoint);
+
+            // ダイアログを閉じる
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
           },
           style: TextButton.styleFrom(foregroundColor: Colors.red),
           child: const Text('削除'),

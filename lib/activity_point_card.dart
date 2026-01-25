@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:practice/database.dart';
 import 'package:practice/dialogs/delete_activity_point_dialog.dart';
 
 class ActivityPointCard extends StatelessWidget {
   const ActivityPointCard(
-      {super.key,
-      required this.points,
-      required this.title,
-      required this.description});
+      {super.key, 
+      required this.activityPoint, 
+      required this.database});
 
-  final int points;
-  final String title;
-  final String description;
+  final ActivityPoint activityPoint;
+  final AppDatabase database;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +20,7 @@ class ActivityPointCard extends StatelessWidget {
         child: Row(
           children: [
             Text(
-              points.toString(),
+              activityPoint.points.toString(),
               style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
             const SizedBox(width: 30),
@@ -29,7 +28,7 @@ class ActivityPointCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  activityPoint.title,
                   style: const TextStyle(fontSize: 25),
                 ),
                 //Text(description),
@@ -40,10 +39,11 @@ class ActivityPointCard extends StatelessWidget {
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (BuildContext context) =>
-                      const DeleteActivityPointDialog(
-                          //database: database
-                          ),
+                  builder: (BuildContext context) => 
+                    DeleteActivityPointDialog(
+                      activityPoint: activityPoint,
+                      database: database,
+                  ),
                 );
               },
               icon: const Icon(Icons.more_vert),

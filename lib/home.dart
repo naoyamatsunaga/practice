@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:practice/activity_point_card.dart';
 import 'package:practice/database.dart';
 import 'package:practice/dialogs/show_add_activity_point_dialog.dart';
+import 'package:practice/models/activity.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key, required this.database});
@@ -20,11 +21,14 @@ class Home extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+          final activityModels = snapshot.data!
+              .map((point) => ActivityModel.fromActivityPoint(point))
+              .toList();
           return ListView.builder(
-            itemCount: snapshot.data!.length,
+            itemCount: activityModels.length,
             itemBuilder: (context, index) {
               return ActivityPointCard(
-                activityPoint: snapshot.data![index],
+                activityModel: activityModels[index],
                 database: database,
               );
             },

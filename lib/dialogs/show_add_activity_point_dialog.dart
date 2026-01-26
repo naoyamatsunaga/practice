@@ -92,11 +92,8 @@ class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
     await widget.database.insertActivityPoint(
       ActivityPoint(
         id: nextId,
-        date: DateTime.now(),
-        time: DateTime.now(),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deletedAt: DateTime.now(),
         title: _titleController.text,
         description: '', // 空文字列で固定
         points: int.parse(_pointsController.text),

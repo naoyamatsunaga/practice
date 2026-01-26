@@ -9,14 +9,11 @@ part 'database.g.dart';
 
 class ActivityPoints extends Table {
   IntColumn get id => integer().autoIncrement()();
-  DateTimeColumn get date => dateTime()();
-  DateTimeColumn get time => dateTime()();
   IntColumn get points => integer()();
   TextColumn get title => text()();
   TextColumn get description => text()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
-  DateTimeColumn get deletedAt => dateTime()();
 }
 
 @DriftDatabase(tables: [ActivityPoints])

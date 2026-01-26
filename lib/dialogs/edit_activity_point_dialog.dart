@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:practice/database.dart';
+import 'package:practice/models/activity.dart';
 
 class EditActivityPointDialog extends StatefulWidget {
   const EditActivityPointDialog({
     super.key,
-    required this.activityPoint,
+    required this.activityModel,
     required this.database,
   });
 
-  final ActivityPoint activityPoint;
+  final ActivityModel activityModel;
   final AppDatabase database;
 
   @override
@@ -25,9 +26,9 @@ class _EditActivityPointDialogState extends State<EditActivityPointDialog> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.activityPoint.title);
+    _titleController = TextEditingController(text: widget.activityModel.title);
     _pointsController =
-        TextEditingController(text: widget.activityPoint.points.toString());
+        TextEditingController(text: widget.activityModel.points.toString());
   }
 
   @override
@@ -102,10 +103,13 @@ class _EditActivityPointDialogState extends State<EditActivityPointDialog> {
   }
 
   Future<void> _updateActivityPoint() async {
-    final updatedPoint = widget.activityPoint.copyWith(
-      title: _titleController.text,
+    final updatedPoint = ActivityPoint(
+      id: widget.activityModel.id,
       points: int.parse(_pointsController.text),
-      updatedAt: DateTime.now(), // 更新日時を現在時刻に
+      title: _titleController.text,
+      description: '',
+      createdAt: widget.activityModel.createdAt,
+      updatedAt: DateTime.now(),
     );
 
     await widget.database.updateActivityPoint(updatedPoint);

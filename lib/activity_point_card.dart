@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:practice/database.dart';
 import 'package:practice/dialogs/delete_activity_point_dialog.dart';
 import 'package:practice/dialogs/edit_activity_point_dialog.dart';
+import 'package:practice/models/activity.dart';
 
 class ActivityPointCard extends StatelessWidget {
   const ActivityPointCard(
-      {super.key, required this.activityPoint, required this.database});
+      {super.key, required this.activityModel, required this.database});
 
-  final ActivityPoint activityPoint;
+  final ActivityModel activityModel;
   final AppDatabase database;
 
   @override
@@ -19,7 +20,7 @@ class ActivityPointCard extends StatelessWidget {
         child: Row(
           children: [
             Text(
-              activityPoint.points.toString(),
+              activityModel.points.toString(),
               style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
             const SizedBox(width: 30),
@@ -27,7 +28,7 @@ class ActivityPointCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  activityPoint.title,
+                  activityModel.title,
                   style: const TextStyle(fontSize: 25),
                 ),
                 //Text(description),
@@ -41,7 +42,7 @@ class ActivityPointCard extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) => EditActivityPointDialog(
-                      activityPoint: activityPoint,
+                      activityModel: activityModel,
                       database: database,
                     ),
                   );
@@ -50,7 +51,7 @@ class ActivityPointCard extends StatelessWidget {
                     context: context,
                     builder: (BuildContext context) =>
                         DeleteActivityPointDialog(
-                      activityPoint: activityPoint,
+                      activityModel: activityModel,
                       database: database,
                     ),
                   );
@@ -68,12 +69,15 @@ class ActivityPointCard extends StatelessWidget {
                   ),
                 ),
                 const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(children: [
+                  value: 'delete',
+                  child: Row(
+                    children: [
                       Icon(Icons.delete, size: 20, color: Colors.red),
                       SizedBox(width: 8),
                       Text('削除', style: TextStyle(color: Colors.red)),
-                    ]))
+                    ],
+                  ),
+                ),
               ],
             ),
           ],

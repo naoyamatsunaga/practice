@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:practice/database.dart';
+import 'package:practice/models/activity.dart';
 
 class DeleteActivityPointDialog extends StatelessWidget {
   const DeleteActivityPointDialog({
     super.key,
-    required this.activityPoint,
+    required this.activityModel,
     required this.database,
   });
 
-  final ActivityPoint activityPoint;
+  final ActivityModel activityModel;
   final AppDatabase database;
 
   @override
@@ -22,10 +23,10 @@ class DeleteActivityPointDialog extends StatelessWidget {
           const Text('この項目を削除しますか？'),
           const SizedBox(height: 12),
           Text(
-            activityPoint.title,
+            activityModel.title,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          Text('ポイント: ${activityPoint.points}'),
+          Text('ポイント: ${activityModel.points}'),
         ],
       ),
       actions: [
@@ -36,7 +37,7 @@ class DeleteActivityPointDialog extends StatelessWidget {
         TextButton(
           onPressed: () async {
             // 削除処理を実行
-            await database.deleteActivityPoint(activityPoint);
+            await database.deleteActivityPoint(activityModel.toActivityPoint());
 
             // ダイアログを閉じる
             if (context.mounted) {

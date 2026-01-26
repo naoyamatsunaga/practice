@@ -40,8 +40,8 @@ class AppDatabase extends _$AppDatabase {
     return result?.read(activityPoints.id.max()) ?? 0;
   }
 
-  // Future<void> updateActivityPoint(ActivityPoint activityPoint) =>
-  //     update(activityPoints).replace(activityPoint);
+  Future<void> updateActivityPoint(ActivityPoint activityPoint) =>
+      update(activityPoints).replace(activityPoint);
 
   Future<void> deleteActivityPoint(ActivityPoint activityPoint) =>
       delete(activityPoints).delete(activityPoint);

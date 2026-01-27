@@ -15,8 +15,7 @@ class ActivityPointCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.only(
-            left: 20.0, right: 10.0, top: 5.0, bottom: 5.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
         child: Row(
           children: [
             Text(
@@ -24,15 +23,9 @@ class ActivityPointCard extends StatelessWidget {
               style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
             const SizedBox(width: 30),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  activityModel.title,
-                  style: const TextStyle(fontSize: 25),
-                ),
-                //Text(description),
-              ],
+            Text(
+              activityModel.title,
+              style: const TextStyle(fontSize: 25),
             ),
             const Spacer(),
             PopupMenuButton(

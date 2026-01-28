@@ -5,6 +5,7 @@ import 'package:practice/database.dart';
 import 'package:practice/dialogs/show_add_activity_point_dialog.dart';
 import 'package:practice/providers/states/activity_point_stream.dart';
 import 'package:practice/providers/states/total_points.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends ConsumerWidget {
   const Home({super.key, required this.database});
@@ -93,4 +94,45 @@ class Home extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// デバッグ用：アプリ初回起動時のみテストデータを3件投入する。
+/// SharedPreferencesでフラグを管理するため、アプリ削除でデータが消えるまで再投入されない。
+Future<void> debugSeedIfFirstLaunch(AppDatabase database) async {
+  const key = 'debug_seed_inserted';
+  final prefs = await SharedPreferences.getInstance();
+  if (prefs.getBool(key) == true) return;
+
+  final now = DateTime.now();
+  final seeds = [
+    ActivityPoint(
+      id: 2,
+      createdAt: now,
+      updatedAt: now,
+      title: '読書',
+      description: '',
+      points: 3,
+    ),
+    ActivityPoint(
+      id: 1,
+      createdAt: now,
+      updatedAt: now,
+      title: 'ウォーキング',
+      description: '',
+      points: 4,
+    ),
+    ActivityPoint(
+      id: 3,
+      createdAt: now,
+      updatedAt: now,
+      title: '筋トレ',
+      description: '',
+      points: 5,
+    ),
+  ];
+
+  for (final point in seeds) {
+    await database.insertActivityPoint(point);
+  }
+  await prefs.setBool(key, true);
 }

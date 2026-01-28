@@ -12,6 +12,7 @@ import 'settings_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final database = AppDatabase();
+  await debugSeedIfFirstLaunch(database);
   runApp(
     ProviderScope(
       overrides: [

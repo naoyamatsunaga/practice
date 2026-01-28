@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:practice/database.dart';
+import 'package:practice/providers/states/database_provider.dart';
 
 import 'color_palette_page.dart';
 import 'colors.dart';
@@ -10,7 +12,16 @@ import 'settings_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final database = AppDatabase();
-  runApp(MyApp(database: database));
+  await debugSeedIfFirstLaunch(database);
+  runApp(
+    ProviderScope(
+      overrides: [
+        // databaseProviderを実際のデータベースインスタンスで上書き
+        databaseProvider.overrideWithValue(database),
+      ],
+      child: MyApp(database: database),
+    ),
+  );
 }
 
 GoRouter _router(AppDatabase database) => GoRouter(

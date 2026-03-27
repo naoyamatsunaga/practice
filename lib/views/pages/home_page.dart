@@ -1,24 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:practice/activity_point_card.dart';
-import 'package:practice/database.dart';
-import 'package:practice/dialogs/show_add_activity_point_dialog.dart';
-import 'package:practice/providers/states/activity_point_stream.dart';
-import 'package:practice/providers/states/total_points.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:practice/view_models/home_view_model.dart';
+import 'package:practice/views/dialogs/show_add_activity_point_dialog.dart';
+import 'package:practice/views/widgets/activity_point_card.dart';
 
-class Home extends ConsumerWidget {
-  const Home({super.key, required this.database});
-
-  final AppDatabase database;
+class HomePage extends ConsumerWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ポイントの合計値を監視
-    final totalPoints = ref.watch(totalPointsProvider);
+    final homeViewModel = ref.read(homeViewModelProvider.notifier);
 
-    // ActivityPointsのリストを監視
-    final activityPointsAsync = ref.watch(activityPointsStreamProvider);
+    final totalPoints = ref.watch(homeTotalPointsProvider);
+    final activityPointsAsync = ref.watch(homeActivityListStreamProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -28,7 +22,6 @@ class Home extends ConsumerWidget {
         data: (activityModels) {
           return Column(
             children: [
-              // 合計値を表示するカード
               Container(
                 width: double.infinity,
                 margin: const EdgeInsets.all(16.0),
@@ -62,14 +55,14 @@ class Home extends ConsumerWidget {
                   ],
                 ),
               ),
-              // ActivityPointsのリスト
               Expanded(
                 child: ListView.builder(
                   itemCount: activityModels.length,
                   itemBuilder: (context, index) {
                     return ActivityPointCard(
                       activityModel: activityModels[index],
-                      database: database,
+                      onEdit: homeViewModel.updateActivity,
+                      onDelete: homeViewModel.deleteActivity,
                     );
                   },
                 ),
@@ -87,52 +80,11 @@ class Home extends ConsumerWidget {
           showDialog(
             context: context,
             builder: (BuildContext context) =>
-                AddActivityPointDialog(database: database),
+                AddActivityPointDialog(onSubmit: homeViewModel.addActivity),
           );
         },
         child: const Icon(Icons.add),
       ),
     );
   }
-}
-
-/// デバッグ用：アプリ初回起動時のみテストデータを3件投入する。
-/// SharedPreferencesでフラグを管理するため、アプリ削除でデータが消えるまで再投入されない。
-Future<void> debugSeedIfFirstLaunch(AppDatabase database) async {
-  const key = 'debug_seed_inserted';
-  final prefs = await SharedPreferences.getInstance();
-  if (prefs.getBool(key) == true) return;
-
-  final now = DateTime.now();
-  final seeds = [
-    ActivityPoint(
-      id: 2,
-      createdAt: now,
-      updatedAt: now,
-      title: '読書',
-      description: '',
-      points: 3,
-    ),
-    ActivityPoint(
-      id: 1,
-      createdAt: now,
-      updatedAt: now,
-      title: 'ウォーキング',
-      description: '',
-      points: 4,
-    ),
-    ActivityPoint(
-      id: 3,
-      createdAt: now,
-      updatedAt: now,
-      title: '筋トレ',
-      description: '',
-      points: 5,
-    ),
-  ];
-
-  for (final point in seeds) {
-    await database.insertActivityPoint(point);
-  }
-  await prefs.setBool(key, true);
 }

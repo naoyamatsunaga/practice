@@ -8,6 +8,7 @@ import 'package:practice/colors.dart';
 import 'package:practice/view_models/home_view_model.dart';
 import 'package:practice/views/pages/color_palette_page.dart';
 import 'package:practice/views/pages/home_page.dart';
+import 'package:practice/views/pages/history_page.dart';
 import 'package:practice/views/pages/settings_page.dart';
 
 void main() async {
@@ -44,6 +45,11 @@ GoRouter _router(AppDatabase database) => GoRouter(
                     label: 'Home',
                   ),
                   NavigationDestination(
+                    icon: Icon(Icons.history_outlined),
+                    selectedIcon: Icon(Icons.history),
+                    label: '履歴',
+                  ),
+                  NavigationDestination(
                     icon: Icon(Icons.settings_outlined),
                     selectedIcon: Icon(Icons.settings),
                     label: '設定',
@@ -59,6 +65,15 @@ GoRouter _router(AppDatabase database) => GoRouter(
                   path: '/home',
                   name: 'home',
                   builder: (context, state) => const HomePage(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/history',
+                  name: 'history',
+                  builder: (context, state) => const HistoryPage(),
                 ),
               ],
             ),

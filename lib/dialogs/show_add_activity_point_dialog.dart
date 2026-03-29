@@ -1,42 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:practice/models/activity.dart';
+import 'package:practice/database.dart';
 
-class EditActivityPointDialog extends StatefulWidget {
-  const EditActivityPointDialog({
-    super.key,
-    required this.activityModel,
-    required this.onSubmit,
-  });
+class AddActivityPointDialog extends StatefulWidget {
+  const AddActivityPointDialog({super.key, required this.database});
 
-  final ActivityModel activityModel;
-  final Future<void> Function({
-    required ActivityModel original,
-    required String title,
-    required int points,
-  }) onSubmit;
+  final AppDatabase database;
 
   @override
-  State<EditActivityPointDialog> createState() =>
-      _EditActivityPointDialogState();
+  State<AddActivityPointDialog> createState() => _AddActivityPointDialogState();
 }
 
-class _EditActivityPointDialogState extends State<EditActivityPointDialog> {
+class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late final TextEditingController _titleController;
-  late final TextEditingController _pointsController;
-
-  @override
-  void initState() {
-    super.initState();
-    _titleController = TextEditingController(text: widget.activityModel.title);
-    _pointsController =
-        TextEditingController(text: widget.activityModel.points.toString());
-  }
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _pointsController = TextEditingController();
 
   @override
   void dispose() {
     _titleController.dispose();
+    _descriptionController.dispose();
     _pointsController.dispose();
     super.dispose();
   }
@@ -44,7 +28,7 @@ class _EditActivityPointDialogState extends State<EditActivityPointDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('ポイント編集'),
+      title: const Text('ポイント追加'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -57,6 +41,16 @@ class _EditActivityPointDialogState extends State<EditActivityPointDialog> {
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'タイトルを入力してください';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: '説明'),
+                controller: _descriptionController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '説明を入力してください';
                   }
                   return null;
                 },
@@ -97,21 +91,32 @@ class _EditActivityPointDialogState extends State<EditActivityPointDialog> {
             if (!isValid) {
               return;
             }
-            _updateActivityPoint();
+            _addActivityPoint();
           },
-          child: const Text('更新'),
+          child: const Text('登録'),
         ),
       ],
     );
   }
 
-  Future<void> _updateActivityPoint() async {
-    await widget.onSubmit(
-      original: widget.activityModel,
-      title: _titleController.text,
-      points: int.parse(_pointsController.text),
+  Future<void> _addActivityPoint() async {
+    final int nextId = (await widget.database.getMaxId()) + 1;
+    await widget.database.insertActivityPoint(
+      ActivityPoint(
+        id: nextId,
+        date: DateTime.now(),
+        time: DateTime.now(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        deletedAt: DateTime.now(),
+        title: _titleController.text,
+        description: _descriptionController.text,
+        points: int.parse(_pointsController.text),
+      ),
     );
-
+    _titleController.clear();
+    _descriptionController.clear();
+    _pointsController.clear();
     if (mounted) {
       Navigator.of(context).pop();
     }

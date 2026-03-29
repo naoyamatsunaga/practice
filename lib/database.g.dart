@@ -18,6 +18,16 @@ class $ActivityPointsTable extends ActivityPoints
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+      'date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _timeMeta = const VerificationMeta('time');
+  @override
+  late final GeneratedColumn<DateTime> time = GeneratedColumn<DateTime>(
+      'time', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   static const VerificationMeta _pointsMeta = const VerificationMeta('points');
   @override
   late final GeneratedColumn<int> points = GeneratedColumn<int>(
@@ -46,9 +56,24 @@ class $ActivityPointsTable extends ActivityPoints
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
       'updated_at', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, points, title, description, createdAt, updatedAt];
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        date,
+        time,
+        points,
+        title,
+        description,
+        createdAt,
+        updatedAt,
+        deletedAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -61,6 +86,18 @@ class $ActivityPointsTable extends ActivityPoints
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+          _dateMeta, date.isAcceptableOrUnknown(data['date']!, _dateMeta));
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('time')) {
+      context.handle(
+          _timeMeta, time.isAcceptableOrUnknown(data['time']!, _timeMeta));
+    } else if (isInserting) {
+      context.missing(_timeMeta);
     }
     if (data.containsKey('points')) {
       context.handle(_pointsMeta,
@@ -94,6 +131,12 @@ class $ActivityPointsTable extends ActivityPoints
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    } else if (isInserting) {
+      context.missing(_deletedAtMeta);
+    }
     return context;
   }
 
@@ -105,6 +148,10 @@ class $ActivityPointsTable extends ActivityPoints
     return ActivityPoint(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      date: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
+      time: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}time'])!,
       points: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}points'])!,
       title: attachedDatabase.typeMapping
@@ -115,6 +162,8 @@ class $ActivityPointsTable extends ActivityPoints
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at'])!,
     );
   }
 
@@ -126,38 +175,50 @@ class $ActivityPointsTable extends ActivityPoints
 
 class ActivityPoint extends DataClass implements Insertable<ActivityPoint> {
   final int id;
+  final DateTime date;
+  final DateTime time;
   final int points;
   final String title;
   final String description;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime deletedAt;
   const ActivityPoint(
       {required this.id,
+      required this.date,
+      required this.time,
       required this.points,
       required this.title,
       required this.description,
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt,
+      required this.deletedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['date'] = Variable<DateTime>(date);
+    map['time'] = Variable<DateTime>(time);
     map['points'] = Variable<int>(points);
     map['title'] = Variable<String>(title);
     map['description'] = Variable<String>(description);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['deleted_at'] = Variable<DateTime>(deletedAt);
     return map;
   }
 
   ActivityPointsCompanion toCompanion(bool nullToAbsent) {
     return ActivityPointsCompanion(
       id: Value(id),
+      date: Value(date),
+      time: Value(time),
       points: Value(points),
       title: Value(title),
       description: Value(description),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      deletedAt: Value(deletedAt),
     );
   }
 
@@ -166,11 +227,14 @@ class ActivityPoint extends DataClass implements Insertable<ActivityPoint> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ActivityPoint(
       id: serializer.fromJson<int>(json['id']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      time: serializer.fromJson<DateTime>(json['time']),
       points: serializer.fromJson<int>(json['points']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String>(json['description']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime>(json['deletedAt']),
     );
   }
   @override
@@ -178,38 +242,50 @@ class ActivityPoint extends DataClass implements Insertable<ActivityPoint> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'date': serializer.toJson<DateTime>(date),
+      'time': serializer.toJson<DateTime>(time),
       'points': serializer.toJson<int>(points),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String>(description),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime>(deletedAt),
     };
   }
 
   ActivityPoint copyWith(
           {int? id,
+          DateTime? date,
+          DateTime? time,
           int? points,
           String? title,
           String? description,
           DateTime? createdAt,
-          DateTime? updatedAt}) =>
+          DateTime? updatedAt,
+          DateTime? deletedAt}) =>
       ActivityPoint(
         id: id ?? this.id,
+        date: date ?? this.date,
+        time: time ?? this.time,
         points: points ?? this.points,
         title: title ?? this.title,
         description: description ?? this.description,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
+        deletedAt: deletedAt ?? this.deletedAt,
       );
   ActivityPoint copyWithCompanion(ActivityPointsCompanion data) {
     return ActivityPoint(
       id: data.id.present ? data.id.value : this.id,
+      date: data.date.present ? data.date.value : this.date,
+      time: data.time.present ? data.time.value : this.time,
       points: data.points.present ? data.points.value : this.points,
       title: data.title.present ? data.title.value : this.title,
       description:
           data.description.present ? data.description.value : this.description,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
@@ -217,89 +293,119 @@ class ActivityPoint extends DataClass implements Insertable<ActivityPoint> {
   String toString() {
     return (StringBuffer('ActivityPoint(')
           ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('time: $time, ')
           ..write('points: $points, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, points, title, description, createdAt, updatedAt);
+  int get hashCode => Object.hash(id, date, time, points, title, description,
+      createdAt, updatedAt, deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ActivityPoint &&
           other.id == this.id &&
+          other.date == this.date &&
+          other.time == this.time &&
           other.points == this.points &&
           other.title == this.title &&
           other.description == this.description &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
 }
 
 class ActivityPointsCompanion extends UpdateCompanion<ActivityPoint> {
   final Value<int> id;
+  final Value<DateTime> date;
+  final Value<DateTime> time;
   final Value<int> points;
   final Value<String> title;
   final Value<String> description;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<DateTime> deletedAt;
   const ActivityPointsCompanion({
     this.id = const Value.absent(),
+    this.date = const Value.absent(),
+    this.time = const Value.absent(),
     this.points = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   });
   ActivityPointsCompanion.insert({
     this.id = const Value.absent(),
+    required DateTime date,
+    required DateTime time,
     required int points,
     required String title,
     required String description,
     required DateTime createdAt,
     required DateTime updatedAt,
-  })  : points = Value(points),
+    required DateTime deletedAt,
+  })  : date = Value(date),
+        time = Value(time),
+        points = Value(points),
         title = Value(title),
         description = Value(description),
         createdAt = Value(createdAt),
-        updatedAt = Value(updatedAt);
+        updatedAt = Value(updatedAt),
+        deletedAt = Value(deletedAt);
   static Insertable<ActivityPoint> custom({
     Expression<int>? id,
+    Expression<DateTime>? date,
+    Expression<DateTime>? time,
     Expression<int>? points,
     Expression<String>? title,
     Expression<String>? description,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (date != null) 'date': date,
+      if (time != null) 'time': time,
       if (points != null) 'points': points,
       if (title != null) 'title': title,
       if (description != null) 'description': description,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
     });
   }
 
   ActivityPointsCompanion copyWith(
       {Value<int>? id,
+      Value<DateTime>? date,
+      Value<DateTime>? time,
       Value<int>? points,
       Value<String>? title,
       Value<String>? description,
       Value<DateTime>? createdAt,
-      Value<DateTime>? updatedAt}) {
+      Value<DateTime>? updatedAt,
+      Value<DateTime>? deletedAt}) {
     return ActivityPointsCompanion(
       id: id ?? this.id,
+      date: date ?? this.date,
+      time: time ?? this.time,
       points: points ?? this.points,
       title: title ?? this.title,
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -308,6 +414,12 @@ class ActivityPointsCompanion extends UpdateCompanion<ActivityPoint> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (time.present) {
+      map['time'] = Variable<DateTime>(time.value);
     }
     if (points.present) {
       map['points'] = Variable<int>(points.value);
@@ -324,6 +436,9 @@ class ActivityPointsCompanion extends UpdateCompanion<ActivityPoint> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
     return map;
   }
 
@@ -331,11 +446,14 @@ class ActivityPointsCompanion extends UpdateCompanion<ActivityPoint> {
   String toString() {
     return (StringBuffer('ActivityPointsCompanion(')
           ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('time: $time, ')
           ..write('points: $points, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
@@ -355,20 +473,26 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$ActivityPointsTableCreateCompanionBuilder = ActivityPointsCompanion
     Function({
   Value<int> id,
+  required DateTime date,
+  required DateTime time,
   required int points,
   required String title,
   required String description,
   required DateTime createdAt,
   required DateTime updatedAt,
+  required DateTime deletedAt,
 });
 typedef $$ActivityPointsTableUpdateCompanionBuilder = ActivityPointsCompanion
     Function({
   Value<int> id,
+  Value<DateTime> date,
+  Value<DateTime> time,
   Value<int> points,
   Value<String> title,
   Value<String> description,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
+  Value<DateTime> deletedAt,
 });
 
 class $$ActivityPointsTableFilterComposer
@@ -382,6 +506,12 @@ class $$ActivityPointsTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get time => $composableBuilder(
+      column: $table.time, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get points => $composableBuilder(
       column: $table.points, builder: (column) => ColumnFilters(column));
@@ -397,6 +527,9 @@ class $$ActivityPointsTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
 }
 
 class $$ActivityPointsTableOrderingComposer
@@ -410,6 +543,12 @@ class $$ActivityPointsTableOrderingComposer
   });
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get time => $composableBuilder(
+      column: $table.time, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<int> get points => $composableBuilder(
       column: $table.points, builder: (column) => ColumnOrderings(column));
@@ -425,6 +564,9 @@ class $$ActivityPointsTableOrderingComposer
 
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
 }
 
 class $$ActivityPointsTableAnnotationComposer
@@ -438,6 +580,12 @@ class $$ActivityPointsTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get time =>
+      $composableBuilder(column: $table.time, builder: (column) => column);
 
   GeneratedColumn<int> get points =>
       $composableBuilder(column: $table.points, builder: (column) => column);
@@ -453,6 +601,9 @@ class $$ActivityPointsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 }
 
 class $$ActivityPointsTableTableManager extends RootTableManager<
@@ -483,35 +634,47 @@ class $$ActivityPointsTableTableManager extends RootTableManager<
               $$ActivityPointsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<DateTime> date = const Value.absent(),
+            Value<DateTime> time = const Value.absent(),
             Value<int> points = const Value.absent(),
             Value<String> title = const Value.absent(),
             Value<String> description = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
+            Value<DateTime> deletedAt = const Value.absent(),
           }) =>
               ActivityPointsCompanion(
             id: id,
+            date: date,
+            time: time,
             points: points,
             title: title,
             description: description,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            deletedAt: deletedAt,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            required DateTime date,
+            required DateTime time,
             required int points,
             required String title,
             required String description,
             required DateTime createdAt,
             required DateTime updatedAt,
+            required DateTime deletedAt,
           }) =>
               ActivityPointsCompanion.insert(
             id: id,
+            date: date,
+            time: time,
             points: points,
             title: title,
             description: description,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            deletedAt: deletedAt,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -69,3 +70,9 @@ LazyDatabase _openConnection() {
     return NativeDatabase(file);
   });
 }
+
+/// データベースインスタンスを提供するProvider
+/// アプリ全体で同じデータベースインスタンスを使用するために使用します
+final databaseProvider = Provider<AppDatabase>((ref) {
+  throw UnimplementedError('databaseProviderはmain.dartで上書きする必要があります');
+});

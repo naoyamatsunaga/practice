@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/database.dart';
 import 'package:practice/models/activity.dart';
 
@@ -55,3 +56,9 @@ class ActivityRepository {
     );
   }
 }
+
+/// Home 画面等用の [ActivityRepository]（DI）
+final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
+  final database = ref.watch(databaseProvider);
+  return ActivityRepository(database);
+});

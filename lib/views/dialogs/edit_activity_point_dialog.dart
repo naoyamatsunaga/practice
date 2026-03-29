@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:practice/database.dart';
 import 'package:practice/models/activity.dart';
 
 class EditActivityPointDialog extends StatefulWidget {
   const EditActivityPointDialog({
     super.key,
     required this.activityModel,
-    required this.database,
+    required this.onSubmit,
   });
 
   final ActivityModel activityModel;
-  final AppDatabase database;
+  final Future<void> Function({
+    required ActivityModel original,
+    required String title,
+    required int points,
+  }) onSubmit;
 
   @override
   State<EditActivityPointDialog> createState() =>
@@ -103,16 +106,11 @@ class _EditActivityPointDialogState extends State<EditActivityPointDialog> {
   }
 
   Future<void> _updateActivityPoint() async {
-    final updatedPoint = ActivityPoint(
-      id: widget.activityModel.id,
-      points: int.parse(_pointsController.text),
+    await widget.onSubmit(
+      original: widget.activityModel,
       title: _titleController.text,
-      description: '',
-      createdAt: widget.activityModel.createdAt,
-      updatedAt: DateTime.now(),
+      points: int.parse(_pointsController.text),
     );
-
-    await widget.database.updateActivityPoint(updatedPoint);
 
     if (mounted) {
       Navigator.of(context).pop();

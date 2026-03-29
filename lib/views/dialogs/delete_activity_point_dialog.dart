@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:practice/database.dart';
 import 'package:practice/models/activity.dart';
 
 class DeleteActivityPointDialog extends StatelessWidget {
   const DeleteActivityPointDialog({
     super.key,
     required this.activityModel,
-    required this.database,
+    required this.onConfirm,
   });
 
   final ActivityModel activityModel;
-  final AppDatabase database;
+  final Future<void> Function(ActivityModel activityModel) onConfirm;
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +35,8 @@ class DeleteActivityPointDialog extends StatelessWidget {
         ),
         TextButton(
           onPressed: () async {
-            // 削除処理を実行
-            await database.deleteActivityPoint(activityModel.toActivityPoint());
+            await onConfirm(activityModel);
 
-            // ダイアログを閉じる
             if (context.mounted) {
               Navigator.of(context).pop();
             }
@@ -50,8 +47,4 @@ class DeleteActivityPointDialog extends StatelessWidget {
       ],
     );
   }
-
-  // Future<void> _deleteActivityPoint() async {
-  //   await database.deleteActivityPoint(activityPoint);
-  // }
 }

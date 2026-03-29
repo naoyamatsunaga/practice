@@ -21,7 +21,22 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  /// 旧スキーマでは `date` など Drift 定義にない NOT NULL 列が残ることがあり、
+  /// INSERT が失敗する。v2 でテーブルを作り直して現行定義と一致させる。
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (Migrator m) async {
+          await m.createAll();
+        },
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from < 2) {
+            await m.deleteTable('activity_points');
+            await m.createTable(activityPoints);
+          }
+        },
+      );
 
   Stream<List<ActivityPoint>> watchActivityPoints() {
     return (select(activityPoints)).watch();

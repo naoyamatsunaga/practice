@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:practice/database.dart';
-import 'package:practice/dialogs/delete_activity_point_dialog.dart';
-import 'package:practice/dialogs/edit_activity_point_dialog.dart';
 import 'package:practice/models/activity.dart';
+import 'package:practice/views/dialogs/delete_activity_point_dialog.dart';
+import 'package:practice/views/dialogs/edit_activity_point_dialog.dart';
 
 class ActivityPointCard extends StatelessWidget {
-  const ActivityPointCard(
-      {super.key, required this.activityModel, required this.database});
+  const ActivityPointCard({
+    super.key,
+    required this.activityModel,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   final ActivityModel activityModel;
-  final AppDatabase database;
+  final Future<void> Function({
+    required ActivityModel original,
+    required String title,
+    required int points,
+  }) onEdit;
+  final Future<void> Function(ActivityModel activityModel) onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +44,7 @@ class ActivityPointCard extends StatelessWidget {
                     context: context,
                     builder: (BuildContext context) => EditActivityPointDialog(
                       activityModel: activityModel,
-                      database: database,
+                      onSubmit: onEdit,
                     ),
                   );
                 } else if (value == 'delete') {
@@ -45,7 +53,7 @@ class ActivityPointCard extends StatelessWidget {
                     builder: (BuildContext context) =>
                         DeleteActivityPointDialog(
                       activityModel: activityModel,
-                      database: database,
+                      onConfirm: onDelete,
                     ),
                   );
                 }

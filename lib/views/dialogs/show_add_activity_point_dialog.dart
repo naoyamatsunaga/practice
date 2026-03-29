@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:practice/database.dart';
 
 class AddActivityPointDialog extends StatefulWidget {
-  const AddActivityPointDialog({super.key, required this.database});
+  const AddActivityPointDialog({super.key, required this.onSubmit});
 
-  final AppDatabase database;
+  final Future<void> Function({required String title, required int points})
+      onSubmit;
 
   @override
   State<AddActivityPointDialog> createState() => _AddActivityPointDialogState();
@@ -88,16 +88,9 @@ class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
   }
 
   Future<void> _addActivityPoint() async {
-    final int nextId = (await widget.database.getMaxId()) + 1;
-    await widget.database.insertActivityPoint(
-      ActivityPoint(
-        id: nextId,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        title: _titleController.text,
-        description: '', // 空文字列で固定
-        points: int.parse(_pointsController.text),
-      ),
+    await widget.onSubmit(
+      title: _titleController.text,
+      points: int.parse(_pointsController.text),
     );
     _titleController.clear();
     _pointsController.clear();

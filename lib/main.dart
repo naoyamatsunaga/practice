@@ -3,16 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:practice/database.dart';
 import 'package:practice/providers/states/database_provider.dart';
-
-import 'color_palette_page.dart';
-import 'colors.dart';
-import 'home.dart';
-import 'settings_page.dart';
+import 'package:practice/repositories/activity_repository.dart';
+import 'package:practice/colors.dart';
+import 'package:practice/view_models/home_view_model.dart';
+import 'package:practice/views/pages/color_palette_page.dart';
+import 'package:practice/views/pages/home_page.dart';
+import 'package:practice/views/pages/settings_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final database = AppDatabase();
-  await debugSeedIfFirstLaunch(database);
+  await debugSeedIfFirstLaunch(ActivityRepository(database));
   runApp(
     ProviderScope(
       overrides: [
@@ -57,7 +58,7 @@ GoRouter _router(AppDatabase database) => GoRouter(
                 GoRoute(
                   path: '/home',
                   name: 'home',
-                  builder: (context, state) => Home(database: database),
+                  builder: (context, state) => const HomePage(),
                 ),
               ],
             ),

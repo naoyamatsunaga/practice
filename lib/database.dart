@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -9,14 +10,11 @@ part 'database.g.dart';
 
 class ActivityPoints extends Table {
   IntColumn get id => integer().autoIncrement()();
-  DateTimeColumn get date => dateTime()();
-  DateTimeColumn get time => dateTime()();
   IntColumn get points => integer()();
   TextColumn get title => text()();
   TextColumn get description => text()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
-  DateTimeColumn get deletedAt => dateTime()();
 }
 
 @DriftDatabase(tables: [ActivityPoints])
@@ -24,7 +22,22 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  /// 旧スキーマでは `date` など Drift 定義にない NOT NULL 列が残ることがあり、
+  /// INSERT が失敗する。v2 でテーブルを作り直して現行定義と一致させる。
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (Migrator m) async {
+          await m.createAll();
+        },
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from < 2) {
+            await m.deleteTable('activity_points');
+            await m.createTable(activityPoints);
+          }
+        },
+      );
 
   Stream<List<ActivityPoint>> watchActivityPoints() {
     return (select(activityPoints)).watch();
@@ -43,8 +56,8 @@ class AppDatabase extends _$AppDatabase {
     return result?.read(activityPoints.id.max()) ?? 0;
   }
 
-  // Future<void> updateActivityPoint(ActivityPoint activityPoint) =>
-  //     update(activityPoints).replace(activityPoint);
+  Future<void> updateActivityPoint(ActivityPoint activityPoint) =>
+      update(activityPoints).replace(activityPoint);
 
   Future<void> deleteActivityPoint(ActivityPoint activityPoint) =>
       delete(activityPoints).delete(activityPoint);
@@ -57,3 +70,9 @@ LazyDatabase _openConnection() {
     return NativeDatabase(file);
   });
 }
+
+/// データベースインスタンスを提供するProvider
+/// アプリ全体で同じデータベースインスタンスを使用するために使用します
+final databaseProvider = Provider<AppDatabase>((ref) {
+  throw UnimplementedError('databaseProviderはmain.dartで上書きする必要があります');
+});

@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:practice/database.dart';
-
-import 'color_palette_page.dart';
-import 'colors.dart';
-import 'home.dart';
-import 'settings_page.dart';
+import 'package:practice/repositories/activity_repository.dart';
+import 'package:practice/colors.dart';
+import 'package:practice/view_models/home_view_model.dart';
+import 'package:practice/views/pages/color_palette_page.dart';
+import 'package:practice/views/pages/home_page.dart';
+import 'package:practice/views/pages/history_page.dart';
+import 'package:practice/views/pages/settings_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final database = AppDatabase();
-  runApp(MyApp(database: database));
+  await debugSeedIfFirstLaunch(ActivityRepository(database));
+  runApp(
+    ProviderScope(
+      overrides: [
+        // databaseProviderを実際のデータベースインスタンスで上書き
+        databaseProvider.overrideWithValue(database),
+      ],
+      child: MyApp(database: database),
+    ),
+  );
 }
 
 GoRouter _router(AppDatabase database) => GoRouter(
@@ -32,6 +44,11 @@ GoRouter _router(AppDatabase database) => GoRouter(
                     label: 'Home',
                   ),
                   NavigationDestination(
+                    icon: Icon(Icons.history_outlined),
+                    selectedIcon: Icon(Icons.history),
+                    label: '履歴',
+                  ),
+                  NavigationDestination(
                     icon: Icon(Icons.settings_outlined),
                     selectedIcon: Icon(Icons.settings),
                     label: '設定',
@@ -46,7 +63,16 @@ GoRouter _router(AppDatabase database) => GoRouter(
                 GoRoute(
                   path: '/home',
                   name: 'home',
-                  builder: (context, state) => Home(database: database),
+                  builder: (context, state) => const HomePage(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/history',
+                  name: 'history',
+                  builder: (context, state) => const HistoryPage(),
                 ),
               ],
             ),

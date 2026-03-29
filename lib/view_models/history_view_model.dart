@@ -1,6 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/models/activity.dart';
-import 'package:practice/view_models/home_view_model.dart';
+import 'package:practice/repositories/activity_repository.dart';
+import 'package:practice/view_models/settings_view_model.dart';
+
+/// 全てのアクティビティを取得する（履歴用）
+final allActivityListStreamProvider =
+    StreamProvider<List<ActivityModel>>((ref) {
+  final repository = ref.watch(activityRepositoryProvider);
+  return repository.watchActivityPoints();
+});
 
 class DailyActivitySummary {
   const DailyActivitySummary({
@@ -17,7 +25,8 @@ class DailyActivitySummary {
 /// 日付ごとに Activity ポイントをグループ化し、合計値とともに提供するProvider
 final dailyActivitySummaryProvider =
     Provider<List<DailyActivitySummary>>((ref) {
-  final activityPointsAsync = ref.watch(homeActivityListStreamProvider);
+  final activityPointsAsync = ref.watch(allActivityListStreamProvider);
+  final resetTime = ref.watch(resetTimeProvider);
 
   if (!activityPointsAsync.hasValue) {
     return [];
@@ -29,12 +38,8 @@ final dailyActivitySummaryProvider =
   final Map<DateTime, List<ActivityModel>> grouped = {};
 
   for (final activity in activities) {
-    // 時間情報を切り捨てて日付のみにする
-    final date = DateTime(
-      activity.createdAt.year,
-      activity.createdAt.month,
-      activity.createdAt.day,
-    );
+    // 時間情報を設定時刻に基づいて論理的な「日付」にまとめる
+    final date = getLogicalDate(activity.createdAt, resetTime);
 
     if (!grouped.containsKey(date)) {
       grouped[date] = [];

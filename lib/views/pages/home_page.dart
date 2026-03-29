@@ -13,6 +13,7 @@ class HomePage extends ConsumerWidget {
 
     final totalPoints = ref.watch(homeTotalPointsProvider);
     final activityPointsAsync = ref.watch(homeActivityListStreamProvider);
+    final nextResetTime = ref.watch(nextResetTimeProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -51,6 +52,23 @@ class HomePage extends ConsumerWidget {
                                     .colorScheme
                                     .onPrimaryContainer,
                               ),
+                    ),
+                    const SizedBox(height: 12.0),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer.withAlpha(200),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '次回リセット: ${nextResetTime.month}/${nextResetTime.day} ${nextResetTime.hour.toString().padLeft(2, '0')}:${nextResetTime.minute.toString().padLeft(2, '0')}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer
+                                  .withAlpha(200),
+                            ),
+                      ),
                     ),
                   ],
                 ),

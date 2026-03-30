@@ -8,6 +8,7 @@ import 'package:practice/view_models/home_view_model.dart';
 import 'package:practice/views/pages/color_palette_page.dart';
 import 'package:practice/views/pages/home_page.dart';
 import 'package:practice/views/pages/history_page.dart';
+import 'package:practice/views/pages/preset_page.dart';
 import 'package:practice/views/pages/settings_page.dart';
 
 void main() async {
@@ -44,6 +45,11 @@ GoRouter _router(AppDatabase database) => GoRouter(
                     label: 'Home',
                   ),
                   NavigationDestination(
+                    icon: Icon(Icons.bookmark_outline),
+                    selectedIcon: Icon(Icons.bookmark),
+                    label: 'プリセット',
+                  ),
+                  NavigationDestination(
                     icon: Icon(Icons.history_outlined),
                     selectedIcon: Icon(Icons.history),
                     label: '履歴',
@@ -64,6 +70,15 @@ GoRouter _router(AppDatabase database) => GoRouter(
                   path: '/home',
                   name: 'home',
                   builder: (context, state) => const HomePage(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/presets',
+                  name: 'presets',
+                  builder: (context, state) => const PresetPage(),
                 ),
               ],
             ),

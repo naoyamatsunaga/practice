@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/models/activity.dart';
+import 'package:practice/models/preset.dart';
 import 'package:practice/repositories/activity_repository.dart';
 import 'package:practice/view_models/settings_view_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:shared_preferences/shared_preferences.dart';
 
 /// アクティビティ一覧（DBの変更をストリームで監視し、現在の期間のものだけをフィルタ）
 final homeActivityListStreamProvider =
@@ -15,11 +16,11 @@ final homeActivityListStreamProvider =
   final now = DateTime.now();
   final nextReset = getNextResetTime(now, resetTime);
   final durationUntilReset = nextReset.difference(now);
-  
+
   final timer = Timer(durationUntilReset, () {
     ref.invalidateSelf();
   });
-  
+
   ref.onDispose(() {
     timer.cancel();
   });
@@ -27,7 +28,7 @@ final homeActivityListStreamProvider =
   return repository.watchActivityPoints().map((list) {
     // 現在の期間の開始時刻を取得
     final startOfPeriod = getStartOfCurrentPeriod(DateTime.now(), resetTime);
-    
+
     // 開始時刻と同等か、それ以降のものだけを抽出
     return list.where((activity) {
       return !activity.createdAt.isBefore(startOfPeriod);
@@ -106,11 +107,24 @@ class HomeViewModel extends Notifier<void> {
     final repository = ref.read(activityRepositoryProvider);
     await repository.deleteActivityPoint(activity);
   }
+
+  Future<void> addActivityFromPreset(PresetModel preset) async {
+    await addActivity(
+      title: preset.title,
+      points: preset.points,
+    );
+  }
+
+  Future<void> addActivitiesFromPresets(List<PresetModel> presets) async {
+    for (final preset in presets) {
+      await addActivityFromPreset(preset);
+    }
+  }
 }
 
 Future<void> debugSeedIfFirstLaunch(ActivityRepository repository) async {
   //const key = 'debug_seed_inserted';
-  final prefs = await SharedPreferences.getInstance();
+  //final prefs = await SharedPreferences.getInstance();
   //if (prefs.getBool(key) == true) return;
 
   final now = DateTime.now();

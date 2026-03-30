@@ -17,12 +17,22 @@ class ActivityPoints extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 }
 
-@DriftDatabase(tables: [ActivityPoints])
+class Presets extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text()();
+  IntColumn get points => integer()();
+  BoolColumn get oneTapEnabled =>
+      boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
+@DriftDatabase(tables: [ActivityPoints, Presets])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
   /// 旧スキーマでは `date` など Drift 定義にない NOT NULL 列が残ることがあり、
   /// INSERT が失敗する。v2 でテーブルを作り直して現行定義と一致させる。
@@ -35,6 +45,12 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.deleteTable('activity_points');
             await m.createTable(activityPoints);
+          }
+          if (from < 3) {
+            await m.createTable(presets);
+          }
+          if (from == 3) {
+            await m.addColumn(presets, presets.oneTapEnabled);
           }
         },
       );
@@ -61,6 +77,27 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteActivityPoint(ActivityPoint activityPoint) =>
       delete(activityPoints).delete(activityPoint);
+
+  Stream<List<Preset>> watchPresets() {
+    return (select(presets)
+          ..orderBy([
+            (t) =>
+                OrderingTerm(expression: t.updatedAt, mode: OrderingMode.desc),
+          ]))
+        .watch();
+  }
+
+  Future<int> getPresetMaxId() async {
+    final query = selectOnly(presets)..addColumns([presets.id.max()]);
+    final result = await query.getSingleOrNull();
+    return result?.read(presets.id.max()) ?? 0;
+  }
+
+  Future<void> insertPreset(Preset preset) => into(presets).insert(preset);
+
+  Future<void> updatePreset(Preset preset) => update(presets).replace(preset);
+
+  Future<void> deletePreset(Preset preset) => delete(presets).delete(preset);
 }
 
 LazyDatabase _openConnection() {

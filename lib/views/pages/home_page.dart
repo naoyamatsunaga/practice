@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:practice/models/preset.dart';
 import 'package:practice/view_models/home_view_model.dart';
+import 'package:practice/view_models/preset_view_model.dart';
 import 'package:practice/views/dialogs/show_add_activity_point_dialog.dart';
 import 'package:practice/views/widgets/activity_point_card.dart';
 
@@ -14,6 +16,7 @@ class HomePage extends ConsumerWidget {
     final totalPoints = ref.watch(homeTotalPointsProvider);
     final activityPointsAsync = ref.watch(homeActivityListStreamProvider);
     final nextResetTime = ref.watch(nextResetTimeProvider);
+    final hasTasks = activityPointsAsync.valueOrNull?.isNotEmpty ?? false;
 
     return Scaffold(
       appBar: AppBar(
@@ -55,9 +58,13 @@ class HomePage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12.0),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer.withAlpha(200),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primaryContainer
+                            .withAlpha(200),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -74,16 +81,28 @@ class HomePage extends ConsumerWidget {
                 ),
               ),
               Expanded(
-                child: ListView.builder(
-                  itemCount: activityModels.length,
-                  itemBuilder: (context, index) {
-                    return ActivityPointCard(
-                      activityModel: activityModels[index],
-                      onEdit: homeViewModel.updateActivity,
-                      onDelete: homeViewModel.deleteActivity,
-                    );
-                  },
-                ),
+                child: activityModels.isEmpty
+                    ? Center(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showTaskSettingOptions(
+                            context: context,
+                            ref: ref,
+                            homeViewModel: homeViewModel,
+                          ),
+                          icon: const Icon(Icons.playlist_add),
+                          label: const Text('タスクを設定'),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: activityModels.length,
+                        itemBuilder: (context, index) {
+                          return ActivityPointCard(
+                            activityModel: activityModels[index],
+                            onEdit: homeViewModel.updateActivity,
+                            onDelete: homeViewModel.deleteActivity,
+                          );
+                        },
+                      ),
               ),
             ],
           );
@@ -93,16 +112,175 @@ class HomePage extends ConsumerWidget {
           child: Text('エラーが発生しました: $error'),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) =>
-                AddActivityPointDialog(onSubmit: homeViewModel.addActivity),
-          );
+      floatingActionButton: hasTasks
+          ? FloatingActionButton(
+              onPressed: () => _showTaskSettingOptions(
+                context: context,
+                ref: ref,
+                homeViewModel: homeViewModel,
+              ),
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
+  }
+
+  Future<void> _showTaskSettingOptions({
+    required BuildContext context,
+    required WidgetRef ref,
+    required HomeViewModel homeViewModel,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (bottomSheetContext) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.view_list),
+                title: const Text('プリセット一覧から追加'),
+                onTap: () {
+                  Navigator.of(bottomSheetContext).pop();
+                  _showPresetSelectionDialog(
+                    context: context,
+                    ref: ref,
+                    homeViewModel: homeViewModel,
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.add_task),
+                title: const Text('新規作成で追加'),
+                onTap: () {
+                  Navigator.of(bottomSheetContext).pop();
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => AddActivityPointDialog(
+                      onSubmit: homeViewModel.addActivity,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.touch_app),
+                title: const Text('1タップ追加ONの項目をすべて追加'),
+                onTap: () async {
+                  Navigator.of(bottomSheetContext).pop();
+                  await _addOneTapEnabledPresets(
+                    context: context,
+                    ref: ref,
+                    homeViewModel: homeViewModel,
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showPresetSelectionDialog({
+    required BuildContext context,
+    required WidgetRef ref,
+    required HomeViewModel homeViewModel,
+  }) async {
+    await showDialog(
+      context: context,
+      builder: (context) => _PresetSelectionDialog(
+        onSelect: (preset) async {
+          await homeViewModel.addActivityFromPreset(preset);
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
         },
-        child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Future<void> _addOneTapEnabledPresets({
+    required BuildContext context,
+    required WidgetRef ref,
+    required HomeViewModel homeViewModel,
+  }) async {
+    try {
+      final presets = await ref.read(presetListStreamProvider.future);
+      final oneTapPresets =
+          presets.where((preset) => preset.oneTapEnabled).toList();
+
+      if (oneTapPresets.isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('1タップ追加ONのプリセットがありません')),
+          );
+        }
+        return;
+      }
+
+      await homeViewModel.addActivitiesFromPresets(oneTapPresets);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${oneTapPresets.length}件のタスクを追加しました')),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('プリセットの読み込みに失敗しました')),
+        );
+      }
+    }
+  }
+}
+
+class _PresetSelectionDialog extends ConsumerWidget {
+  const _PresetSelectionDialog({
+    required this.onSelect,
+  });
+
+  final Future<void> Function(PresetModel preset) onSelect;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final presetAsync = ref.watch(presetListStreamProvider);
+
+    return AlertDialog(
+      title: const Text('プリセット一覧'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: presetAsync.when(
+          data: (presets) {
+            if (presets.isEmpty) {
+              return const Center(child: Text('プリセットはまだありません'));
+            }
+            return ListView.builder(
+              shrinkWrap: true,
+              itemCount: presets.length,
+              itemBuilder: (context, index) {
+                final preset = presets[index];
+                return ListTile(
+                  title: Text(preset.title),
+                  subtitle: Text('ポイント: ${preset.points}'),
+                  trailing: preset.oneTapEnabled
+                      ? const Icon(Icons.touch_app, size: 18)
+                      : null,
+                  onTap: () async {
+                    await onSelect(preset);
+                  },
+                );
+              },
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Text('エラーが発生しました: $error'),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('閉じる'),
+        ),
+      ],
     );
   }
 }

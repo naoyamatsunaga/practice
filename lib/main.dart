@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:practice/database.dart';
-import 'package:practice/repositories/activity_repository.dart';
 import 'package:practice/colors.dart';
+import 'package:practice/database.dart';
+import 'package:practice/repositories/task_repository.dart';
 import 'package:practice/view_models/home_view_model.dart';
 import 'package:practice/views/pages/color_palette_page.dart';
-import 'package:practice/views/pages/home_page.dart';
 import 'package:practice/views/pages/history_page.dart';
+import 'package:practice/views/pages/home_page.dart';
 import 'package:practice/views/pages/preset_page.dart';
 import 'package:practice/views/pages/settings_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final database = AppDatabase();
-  await debugSeedIfFirstLaunch(ActivityRepository(database));
+  await debugSeedIfFirstLaunch(TaskRepository(database));
   runApp(
     ProviderScope(
       overrides: [

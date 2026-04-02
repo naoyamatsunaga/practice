@@ -1,18 +1,21 @@
 import 'dart:io';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 part 'database.g.dart';
 
-class ActivityPoints extends Table {
+class Tasks extends Table {
+  @override
+  String get tableName => 'Task';
+
   IntColumn get id => integer().autoIncrement()();
   IntColumn get points => integer()();
   TextColumn get title => text()();
-  TextColumn get description => text()();
+  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }
@@ -21,18 +24,18 @@ class Presets extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();
   IntColumn get points => integer()();
-  BoolColumn get oneTapEnabled =>
+  BoolColumn get isQuickAdd =>
       boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }
 
-@DriftDatabase(tables: [ActivityPoints, Presets])
+@DriftDatabase(tables: [Tasks, Presets])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   /// 旧スキーマでは `date` など Drift 定義にない NOT NULL 列が残ることがあり、
   /// INSERT が失敗する。v2 でテーブルを作り直して現行定義と一致させる。
@@ -42,41 +45,33 @@ class AppDatabase extends _$AppDatabase {
           await m.createAll();
         },
         onUpgrade: (Migrator m, int from, int to) async {
-          if (from < 2) {
-            await m.deleteTable('activity_points');
-            await m.createTable(activityPoints);
-          }
-          if (from < 3) {
+          if (from < 5) {
+            await customStatement('DROP TABLE IF EXISTS activity_points');
+            await customStatement('DROP TABLE IF EXISTS Task');
+            await m.createTable(tasks);
+            await customStatement('DROP TABLE IF EXISTS presets');
             await m.createTable(presets);
-          }
-          if (from == 3) {
-            await m.addColumn(presets, presets.oneTapEnabled);
           }
         },
       );
 
-  Stream<List<ActivityPoint>> watchActivityPoints() {
-    return (select(activityPoints)).watch();
+  Stream<List<Task>> watchTasks() {
+    return (select(tasks)).watch();
   }
 
-  Future<List<ActivityPoint>> getAllActivityPoints() =>
-      select(activityPoints).get();
+  Future<List<Task>> getAllTasks() => select(tasks).get();
 
-  Future<void> insertActivityPoint(ActivityPoint activityPoint) =>
-      into(activityPoints).insert(activityPoint);
+  Future<void> insertTask(Task task) => into(tasks).insert(task);
 
-  Future<int> getMaxId() async {
-    final query = selectOnly(activityPoints)
-      ..addColumns([activityPoints.id.max()]);
+  Future<int> getTaskMaxId() async {
+    final query = selectOnly(tasks)..addColumns([tasks.id.max()]);
     final result = await query.getSingleOrNull();
-    return result?.read(activityPoints.id.max()) ?? 0;
+    return result?.read(tasks.id.max()) ?? 0;
   }
 
-  Future<void> updateActivityPoint(ActivityPoint activityPoint) =>
-      update(activityPoints).replace(activityPoint);
+  Future<void> updateTask(Task task) => update(tasks).replace(task);
 
-  Future<void> deleteActivityPoint(ActivityPoint activityPoint) =>
-      delete(activityPoints).delete(activityPoint);
+  Future<void> deleteTask(Task task) => delete(tasks).delete(task);
 
   Stream<List<Preset>> watchPresets() {
     return (select(presets)

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/view_models/history_view_model.dart';
-import 'package:practice/views/widgets/history_point_card.dart';
+import 'package:practice/views/widgets/history_task_card.dart';
 
 class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
@@ -21,7 +21,7 @@ class HistoryPage extends ConsumerWidget {
               itemCount: summaryList.length,
               itemBuilder: (context, index) {
                 final summary = summaryList[index];
-                return HistoryPointCard(summary: summary);
+                return HistoryTaskCard(summary: summary);
               },
             ),
     );

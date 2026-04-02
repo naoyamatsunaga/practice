@@ -3,7 +3,7 @@ class PresetModel {
     required this.id,
     required this.title,
     required this.points,
-    required this.oneTapEnabled,
+    required this.isQuickAdd,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -11,7 +11,7 @@ class PresetModel {
   final int id;
   final String title;
   final int points;
-  final bool oneTapEnabled;
+  final bool isQuickAdd;
   final DateTime createdAt;
   final DateTime updatedAt;
 }

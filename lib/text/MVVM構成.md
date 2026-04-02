@@ -3,9 +3,9 @@
 
 lib/
 ├── models/                     // Entity（データの形）
-│   └── activity.dart
+│   └── task.dart
 ├── repositories/               // Repository（DB・APIとのやりとり）
-│   └── activity_repository.dart（例）
+│   └── task_repository.dart（例）
 ├── view_models/                // ViewModel（Riverpod Notifier / StateNotifier）
 │   ├── activity_view_model.dart
 │   ├── total_points_view_model.dart
@@ -15,9 +15,9 @@ lib/
 │   │   ├── color_palette_page.dart
 │   │   └── settings_page.dart
 │   ├── dialogs/
-│   │   ├── delete_activity_point_dialog.dart
-│   │   ├── edit_activity_point_dialog.dart
-│   │   └── show_add_activity_point_dialog.dart
+│   │   ├── delete_task_dialog.dart
+│   │   ├── edit_task_dialog.dart
+│   │   └── show_add_task_dialog.dart
 │   └── widgets/               // 共通・再利用可能なWidget
 ├── providers/ (※なくしてもOKだが、使うなら役割を限定)
 │   └── app_lifecycle_providers.dart など
@@ -68,7 +68,7 @@ MVVMの観点
 Home 自体は View（画面） として妥当。
 ただし、
 SharedPreferences を使ったシード処理
-DB への insertActivityPoint など は本来 Model / Repository or ViewModel 側に寄せたい処理。
+DB への insertTask など は本来 Model / Repository or ViewModel 側に寄せたい処理。
 将来的には：
 Riverpod の Notifier / AsyncNotifier などで ActivityListViewModel を作り、
 リスト取得
@@ -93,14 +93,14 @@ MVVMの観点
 ここも 純粋な View。
 ナビゲーションは View 層が持つことが多いので、このままでOKです。
 将来設定項目が増え、状態を持ち始めたら、SettingsViewModel などを view_models/ に追加し、ここから ref.watch / ref.read する形がよいです。
-widgets/activity_point_card.dart の役割とMVVM的コメント
+widgets/task_card.dart の役割とMVVM的コメント
 役割
 
 アクティビティポイント1件を表示する リストアイテム用カードWidget。
 ポイント数・タイトルの表示。
 PopupMenuButton から
-編集ダイアログ（EditActivityPointDialog）
-削除ダイアログ（DeleteActivityPointDialog） を開く。
+編集ダイアログ（EditTaskDialog）
+削除ダイアログ（DeleteTaskDialog） を開く。
 そのダイアログ内でDBの更新・削除が実行される。
 MVVMの観点
 
@@ -110,7 +110,7 @@ AppDatabase を直接受け取り、ダイアログに渡している
 ダイアログ内で DB へ直接 CRUD を叩いている
 という形で、UI層がModel層に直接依存している状態です。
 MVVM に寄せるなら：
-ActivityPointCard には onEdit / onDelete のコールバック（or ViewModelへの参照）だけ渡す
+TaskCard には onEdit / onDelete のコールバック（or ViewModelへの参照）だけ渡す
 ダイアログも「入力を返すだけ or ViewModelのメソッドを呼ぶだけ」にして、
 実際の insert/update/delete は ActivityViewModel 側に集約
 という形がきれいです。
@@ -127,7 +127,7 @@ lib/view_models/:
 ActivityViewModel（リスト＋CRUD＋合計ポイント）
 SettingsViewModel（将来の設定状態） など、状態管理とビジネスロジックを集約する
 lib/repositories/:
-ActivityRepository などで DB (AppDatabase) 操作を隠蔽し、ViewModel から呼び出す
+TaskRepository などで DB (AppDatabase) 操作を隠蔽し、ViewModel から呼び出す
 この方向で少しずつロジックを移していけば、
 今の views 配下はそのまま「MVVM の View 層」としてきれいに整理されていきます。
 
@@ -138,29 +138,29 @@ ActivityRepository などで DB (AppDatabase) 操作を隠蔽し、ViewModel か
 変更内容
 models を純化
 
-lib/models/activity.dart
+lib/models/task.dart
 import 'package:practice/database.dart'; を削除
-fromActivityPoint / toActivityPoint を削除（DB型依存を除去）
+fromTask / toTask を削除（DB型依存を除去）
 Repository新設・実装
 
-lib/repositories/activity_repository.dart
+lib/repositories/task_repository.dart
 追加した責務:
 DBアクセス: watch/getAll/insert/update/delete/getNextId
-変換: ActivityPoint <-> ActivityModel（privateメソッドに集約）
+変換: Task <-> TaskModel（privateメソッドに集約）
 Stream Provider をRepository経由へ変更
 
 lib/providers/states/activity_point_stream.dart
-activityRepositoryProvider を追加
-activityPointsStreamProvider は repository.watchActivityPoints() を返す形に変更
+taskRepositoryProvider を追加
+taskStreamProvider は repository.watchTasks() を返す形に変更
 ダイアログ側をRepository利用へ変更
 
-lib/dialogs/show_add_activity_point_dialog.dart
-lib/dialogs/edit_activity_point_dialog.dart
-lib/dialogs/delete_activity_point_dialog.dart
-AppDatabase 受け取りをやめ、ActivityRepository 受け取りに変更
+lib/dialogs/show_add_task_dialog.dart
+lib/dialogs/edit_task_dialog.dart
+lib/dialogs/delete_task_dialog.dart
+AppDatabase 受け取りをやめ、TaskRepository 受け取りに変更
 呼び出し元を追従
 
-lib/activity_point_card.dart
+lib/task_card.dart
 lib/home.dart
-ActivityRepository(database) を生成して、カード/ダイアログに渡すよう変更
-debugSeedIfFirstLaunch も ActivityModel + repository.insertActivityPoint を使う形に変更
+TaskRepository(database) を生成して、カード/ダイアログに渡すよう変更
+debugSeedIfFirstLaunch も TaskModel + repository.insertTask を使う形に変更

@@ -7,7 +7,7 @@ class AddPresetDialog extends StatefulWidget {
   final Future<void> Function({
     required String title,
     required int points,
-    required bool oneTapEnabled,
+    required bool isQuickAdd,
   }) onSubmit;
 
   @override
@@ -18,7 +18,7 @@ class _AddPresetDialogState extends State<AddPresetDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _pointsController = TextEditingController();
-  bool _oneTapEnabled = false;
+  bool _isQuickAdd = false;
 
   @override
   void dispose() {
@@ -71,10 +71,10 @@ class _AddPresetDialogState extends State<AddPresetDialog> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('1タップ追加'),
                 subtitle: const Text('ONにするとホーム画面で一括追加できます'),
-                value: _oneTapEnabled,
+                value: _isQuickAdd,
                 onChanged: (value) {
                   setState(() {
-                    _oneTapEnabled = value;
+                    _isQuickAdd = value;
                   });
                 },
               ),
@@ -105,7 +105,7 @@ class _AddPresetDialogState extends State<AddPresetDialog> {
     await widget.onSubmit(
       title: _titleController.text,
       points: int.parse(_pointsController.text),
-      oneTapEnabled: _oneTapEnabled,
+      isQuickAdd: _isQuickAdd,
     );
     if (mounted) {
       Navigator.of(context).pop();

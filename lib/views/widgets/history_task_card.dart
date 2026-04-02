@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:practice/view_models/history_view_model.dart';
 
-class HistoryPointCard extends StatelessWidget {
-  const HistoryPointCard({super.key, required this.summary});
+class HistoryTaskCard extends StatelessWidget {
+  const HistoryTaskCard({super.key, required this.summary});
 
   final DailyActivitySummary summary;
 
@@ -15,8 +15,7 @@ class HistoryPointCard extends StatelessWidget {
         elevation: 2,
         child: Theme(
           // ExpansionTileのデフォルトの上下ボーダーラインを消す
-          data:
-              Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
             // タイトル部分の余白調整
             tilePadding:
@@ -42,9 +41,8 @@ class HistoryPointCard extends StatelessWidget {
                   child: Text(
                     '合計 ${summary.totalPoints} pt',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onPrimaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                           fontWeight: FontWeight.bold,
                         ),
                   ),
@@ -70,10 +68,7 @@ class HistoryPointCard extends StatelessWidget {
                       ),
                       Text(
                         '+${activity.points} pt',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w500,
                             ),
                       ),

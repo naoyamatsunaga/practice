@@ -14,7 +14,7 @@ class EditPresetDialog extends StatefulWidget {
     required PresetModel original,
     required String title,
     required int points,
-    required bool oneTapEnabled,
+    required bool isQuickAdd,
   }) onSubmit;
 
   @override
@@ -25,7 +25,7 @@ class _EditPresetDialogState extends State<EditPresetDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final TextEditingController _titleController;
   late final TextEditingController _pointsController;
-  late bool _oneTapEnabled;
+  late bool _isQuickAdd;
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _EditPresetDialogState extends State<EditPresetDialog> {
     _titleController = TextEditingController(text: widget.preset.title);
     _pointsController =
         TextEditingController(text: widget.preset.points.toString());
-    _oneTapEnabled = widget.preset.oneTapEnabled;
+    _isQuickAdd = widget.preset.isQuickAdd;
   }
 
   @override
@@ -87,10 +87,10 @@ class _EditPresetDialogState extends State<EditPresetDialog> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('1タップ追加'),
                 subtitle: const Text('ONにするとホーム画面で一括追加できます'),
-                value: _oneTapEnabled,
+                value: _isQuickAdd,
                 onChanged: (value) {
                   setState(() {
-                    _oneTapEnabled = value;
+                    _isQuickAdd = value;
                   });
                 },
               ),
@@ -122,7 +122,7 @@ class _EditPresetDialogState extends State<EditPresetDialog> {
       original: widget.preset,
       title: _titleController.text,
       points: int.parse(_pointsController.text),
-      oneTapEnabled: _oneTapEnabled,
+      isQuickAdd: _isQuickAdd,
     );
     if (mounted) {
       Navigator.of(context).pop();

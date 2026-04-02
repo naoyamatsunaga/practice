@@ -18,7 +18,7 @@ class PresetViewModel extends Notifier<void> {
   Future<void> addPreset({
     required String title,
     required int points,
-    required bool oneTapEnabled,
+    required bool isQuickAdd,
   }) async {
     final repository = ref.read(presetRepositoryProvider);
     final now = DateTime.now();
@@ -29,7 +29,7 @@ class PresetViewModel extends Notifier<void> {
         id: nextId,
         title: title,
         points: points,
-        oneTapEnabled: oneTapEnabled,
+        isQuickAdd: isQuickAdd,
         createdAt: now,
         updatedAt: now,
       ),
@@ -40,7 +40,7 @@ class PresetViewModel extends Notifier<void> {
     required PresetModel original,
     required String title,
     required int points,
-    required bool oneTapEnabled,
+    required bool isQuickAdd,
   }) async {
     final repository = ref.read(presetRepositoryProvider);
     await repository.updatePreset(
@@ -48,7 +48,7 @@ class PresetViewModel extends Notifier<void> {
         id: original.id,
         title: title,
         points: points,
-        oneTapEnabled: oneTapEnabled,
+        isQuickAdd: isQuickAdd,
         createdAt: original.createdAt,
         updatedAt: DateTime.now(),
       ),

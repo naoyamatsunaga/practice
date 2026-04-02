@@ -1,9 +1,9 @@
-class ActivityModel {
-  const ActivityModel({
+class TaskModel {
+  const TaskModel({
     required this.id,
     required this.points,
     required this.title,
-    required this.description,
+    required this.isCompleted,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -11,7 +11,7 @@ class ActivityModel {
   final int id;
   final int points;
   final String title;
-  final String description;
+  final bool isCompleted;
   final DateTime createdAt;
   final DateTime updatedAt;
 }

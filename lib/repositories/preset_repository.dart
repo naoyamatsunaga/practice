@@ -32,7 +32,7 @@ class PresetRepository {
       id: preset.id,
       title: preset.title,
       points: preset.points,
-      oneTapEnabled: preset.oneTapEnabled,
+      isQuickAdd: preset.isQuickAdd,
       createdAt: preset.createdAt,
       updatedAt: preset.updatedAt,
     );
@@ -43,7 +43,7 @@ class PresetRepository {
       id: model.id,
       title: model.title,
       points: model.points,
-      oneTapEnabled: model.oneTapEnabled,
+      isQuickAdd: model.isQuickAdd,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     );

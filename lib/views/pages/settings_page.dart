@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:practice/view_models/settings_view_model.dart';
 import 'package:practice/views/dialogs/custom_time_picker_dialog.dart';
 
@@ -9,18 +8,12 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(settingsViewModelProvider);
     final resetTime = ref.watch(resetTimeProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('設定')),
       body: ListView(
         children: [
-          ListTile(
-            leading: const Icon(Icons.palette),
-            title: const Text('カラーパレット'),
-            onTap: () => context.push(viewModel.colorPaletteRoute),
-          ),
           ListTile(
             leading: const Icon(Icons.access_time),
             title: const Text('更新時刻（リセット）'),

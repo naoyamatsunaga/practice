@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:practice/colors.dart';
 import 'package:practice/database.dart';
 import 'package:practice/repositories/task_repository.dart';
 import 'package:practice/view_models/home_view_model.dart';
-import 'package:practice/views/pages/color_palette_page.dart';
 import 'package:practice/views/pages/history_page.dart';
 import 'package:practice/views/pages/home_page.dart';
 import 'package:practice/views/pages/preset_page.dart';
@@ -102,11 +100,6 @@ GoRouter _router(AppDatabase database) => GoRouter(
             ),
           ],
         ),
-        GoRoute(
-          path: '/colors',
-          name: 'colors',
-          builder: (context, state) => const ColorPalettePage(),
-        ),
       ],
     );
 
@@ -118,8 +111,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Flutter Practice',
-      theme: AppThemeExtension.createLightTheme(),
-      darkTheme: AppThemeExtension.createDarkTheme(),
+      theme: ThemeData(),
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.system,
       routerConfig: _router(database),
     );
   }

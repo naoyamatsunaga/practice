@@ -1,15 +1,16 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:practice/models/activity.dart';
 import 'package:practice/models/preset.dart';
-import 'package:practice/repositories/activity_repository.dart';
+import 'package:practice/models/task.dart';
+import 'package:practice/repositories/task_repository.dart';
 import 'package:practice/view_models/settings_view_model.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 
 /// アクティビティ一覧（DBの変更をストリームで監視し、現在の期間のものだけをフィルタ）
 final homeActivityListStreamProvider =
-    StreamProvider<List<ActivityModel>>((ref) {
-  final repository = ref.watch(activityRepositoryProvider);
+    StreamProvider<List<TaskModel>>((ref) {
+  final repository = ref.watch(taskRepositoryProvider);
   final resetTime = ref.watch(resetTimeProvider);
 
   // タイマーを設定して、次回リセット時刻が来たら再取得（UI更新）させる
@@ -25,7 +26,7 @@ final homeActivityListStreamProvider =
     timer.cancel();
   });
 
-  return repository.watchActivityPoints().map((list) {
+  return repository.watchTasks().map((list) {
     // 現在の期間の開始時刻を取得
     final startOfPeriod = getStartOfCurrentPeriod(DateTime.now(), resetTime);
 
@@ -54,7 +55,7 @@ final homeTotalPointsProvider = Provider<int>((ref) {
     return 0;
   }
   final list = async.value ?? [];
-  return list.fold<int>(0, (sum, activity) => sum + activity.points);
+  return list.fold<int>(0, (sum, task) => sum + task.points);
 });
 
 final homeViewModelProvider = NotifierProvider<HomeViewModel, void>(
@@ -69,16 +70,16 @@ class HomeViewModel extends Notifier<void> {
     required String title,
     required int points,
   }) async {
-    final repository = ref.read(activityRepositoryProvider);
+    final repository = ref.read(taskRepositoryProvider);
     final now = DateTime.now();
     final nextId = await repository.getNextId();
 
-    await repository.insertActivityPoint(
-      ActivityModel(
+    await repository.insertTask(
+      TaskModel(
         id: nextId,
         points: points,
         title: title,
-        description: '',
+        isCompleted: false,
         createdAt: now,
         updatedAt: now,
       ),
@@ -86,26 +87,26 @@ class HomeViewModel extends Notifier<void> {
   }
 
   Future<void> updateActivity({
-    required ActivityModel original,
+    required TaskModel original,
     required String title,
     required int points,
   }) async {
-    final repository = ref.read(activityRepositoryProvider);
-    await repository.updateActivityPoint(
-      ActivityModel(
+    final repository = ref.read(taskRepositoryProvider);
+    await repository.updateTask(
+      TaskModel(
         id: original.id,
         points: points,
         title: title,
-        description: original.description,
+        isCompleted: original.isCompleted,
         createdAt: original.createdAt,
         updatedAt: DateTime.now(),
       ),
     );
   }
 
-  Future<void> deleteActivity(ActivityModel activity) async {
-    final repository = ref.read(activityRepositoryProvider);
-    await repository.deleteActivityPoint(activity);
+  Future<void> deleteActivity(TaskModel task) async {
+    final repository = ref.read(taskRepositoryProvider);
+    await repository.deleteTask(task);
   }
 
   Future<void> addActivityFromPreset(PresetModel preset) async {
@@ -122,41 +123,41 @@ class HomeViewModel extends Notifier<void> {
   }
 }
 
-Future<void> debugSeedIfFirstLaunch(ActivityRepository repository) async {
+Future<void> debugSeedIfFirstLaunch(TaskRepository repository) async {
   //const key = 'debug_seed_inserted';
   //final prefs = await SharedPreferences.getInstance();
   //if (prefs.getBool(key) == true) return;
 
   final now = DateTime.now();
-  final seeds = <ActivityModel>[
-    ActivityModel(
+  final seeds = <TaskModel>[
+    TaskModel(
       id: 2,
       createdAt: now,
       updatedAt: now,
       title: '読書',
-      description: '',
+      isCompleted: false,
       points: 3,
     ),
-    ActivityModel(
+    TaskModel(
       id: 1,
       createdAt: now,
       updatedAt: now,
       title: 'ウォーキング',
-      description: '',
+      isCompleted: false,
       points: 4,
     ),
-    ActivityModel(
+    TaskModel(
       id: 3,
       createdAt: now,
       updatedAt: now,
       title: '筋トレ',
-      description: '',
+      isCompleted: false,
       points: 5,
     ),
   ];
 
-  for (final point in seeds) {
-    await repository.insertActivityPoint(point);
+  for (final task in seeds) {
+    await repository.insertTask(task);
   }
   //await prefs.setBool(key, true);
 }

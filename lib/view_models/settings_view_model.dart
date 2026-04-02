@@ -39,16 +39,6 @@ class ResetTimeNotifier extends Notifier<TimeOfDay> {
   }
 }
 
-class SettingsViewModel {
-  const SettingsViewModel();
-
-  String get colorPaletteRoute => '/colors';
-}
-
-final settingsViewModelProvider = Provider<SettingsViewModel>((ref) {
-  return const SettingsViewModel();
-});
-
 // --- Time Util Functions ---
 
 /// 現時刻とリセット時刻から、現在の期間の開始時刻を計算する

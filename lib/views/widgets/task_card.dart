@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:practice/models/activity.dart';
-import 'package:practice/views/dialogs/delete_activity_point_dialog.dart';
-import 'package:practice/views/dialogs/edit_activity_point_dialog.dart';
+import 'package:practice/models/task.dart';
+import 'package:practice/views/dialogs/delete_task_dialog.dart';
+import 'package:practice/views/dialogs/edit_task_dialog.dart';
 
-class ActivityPointCard extends StatelessWidget {
-  const ActivityPointCard({
+class TaskCard extends StatelessWidget {
+  const TaskCard({
     super.key,
     required this.activityModel,
     required this.onEdit,
     required this.onDelete,
   });
 
-  final ActivityModel activityModel;
+  final TaskModel activityModel;
   final Future<void> Function({
-    required ActivityModel original,
+    required TaskModel original,
     required String title,
     required int points,
   }) onEdit;
-  final Future<void> Function(ActivityModel activityModel) onDelete;
+  final Future<void> Function(TaskModel activityModel) onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class ActivityPointCard extends StatelessWidget {
                 if (value == 'edit') {
                   showDialog(
                     context: context,
-                    builder: (BuildContext context) => EditActivityPointDialog(
+                    builder: (BuildContext context) => EditTaskDialog(
                       activityModel: activityModel,
                       onSubmit: onEdit,
                     ),
@@ -51,7 +51,7 @@ class ActivityPointCard extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) =>
-                        DeleteActivityPointDialog(
+                        DeleteTaskDialog(
                       activityModel: activityModel,
                       onConfirm: onDelete,
                     ),

@@ -16,7 +16,7 @@ class PresetCard extends StatelessWidget {
     required PresetModel original,
     required String title,
     required int points,
-    required bool oneTapEnabled,
+    required bool isQuickAdd,
   }) onEdit;
   final Future<void> Function(PresetModel preset) onDelete;
 
@@ -95,7 +95,7 @@ class PresetCard extends StatelessWidget {
               children: [
                 Chip(
                   label: Text(
-                    preset.oneTapEnabled ? '1タップ追加: ON' : '1タップ追加: OFF',
+                    preset.isQuickAdd ? '1タップ追加: ON' : '1タップ追加: OFF',
                   ),
                 ),
               ],

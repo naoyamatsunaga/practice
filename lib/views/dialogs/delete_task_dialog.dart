@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:practice/models/activity.dart';
+import 'package:practice/models/task.dart';
 
-class DeleteActivityPointDialog extends StatelessWidget {
-  const DeleteActivityPointDialog({
+class DeleteTaskDialog extends StatelessWidget {
+  const DeleteTaskDialog({
     super.key,
     required this.activityModel,
     required this.onConfirm,
   });
 
-  final ActivityModel activityModel;
-  final Future<void> Function(ActivityModel activityModel) onConfirm;
+  final TaskModel activityModel;
+  final Future<void> Function(TaskModel activityModel) onConfirm;
 
   @override
   Widget build(BuildContext context) {

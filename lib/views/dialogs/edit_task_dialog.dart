@@ -1,20 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:practice/models/task.dart';
 
-class AddActivityPointDialog extends StatefulWidget {
-  const AddActivityPointDialog({super.key, required this.onSubmit});
+class EditTaskDialog extends StatefulWidget {
+  const EditTaskDialog({
+    super.key,
+    required this.activityModel,
+    required this.onSubmit,
+  });
 
-  final Future<void> Function({required String title, required int points})
-      onSubmit;
+  final TaskModel activityModel;
+  final Future<void> Function({
+    required TaskModel original,
+    required String title,
+    required int points,
+  }) onSubmit;
 
   @override
-  State<AddActivityPointDialog> createState() => _AddActivityPointDialogState();
+  State<EditTaskDialog> createState() => _EditTaskDialogState();
 }
 
-class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
+class _EditTaskDialogState extends State<EditTaskDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _pointsController = TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _pointsController;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.activityModel.title);
+    _pointsController =
+        TextEditingController(text: widget.activityModel.points.toString());
+  }
 
   @override
   void dispose() {
@@ -26,7 +43,7 @@ class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('ポイント追加'),
+      title: const Text('ポイント編集'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -79,21 +96,21 @@ class _AddActivityPointDialogState extends State<AddActivityPointDialog> {
             if (!isValid) {
               return;
             }
-            _addActivityPoint();
+            _updateTask();
           },
-          child: const Text('登録'),
+          child: const Text('更新'),
         ),
       ],
     );
   }
 
-  Future<void> _addActivityPoint() async {
+  Future<void> _updateTask() async {
     await widget.onSubmit(
+      original: widget.activityModel,
       title: _titleController.text,
       points: int.parse(_pointsController.text),
     );
-    _titleController.clear();
-    _pointsController.clear();
+
     if (mounted) {
       Navigator.of(context).pop();
     }

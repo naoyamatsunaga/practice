@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/models/preset.dart';
 import 'package:practice/view_models/home_view_model.dart';
 import 'package:practice/view_models/preset_view_model.dart';
-import 'package:practice/views/dialogs/show_add_activity_point_dialog.dart';
-import 'package:practice/views/widgets/activity_point_card.dart';
+import 'package:practice/views/dialogs/show_add_task_dialog.dart';
+import 'package:practice/views/widgets/task_card.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -96,7 +96,7 @@ class HomePage extends ConsumerWidget {
                     : ListView.builder(
                         itemCount: activityModels.length,
                         itemBuilder: (context, index) {
-                          return ActivityPointCard(
+                          return TaskCard(
                             activityModel: activityModels[index],
                             onEdit: homeViewModel.updateActivity,
                             onDelete: homeViewModel.deleteActivity,
@@ -155,7 +155,7 @@ class HomePage extends ConsumerWidget {
                   Navigator.of(bottomSheetContext).pop();
                   showDialog(
                     context: context,
-                    builder: (dialogContext) => AddActivityPointDialog(
+                    builder: (dialogContext) => AddTaskDialog(
                       onSubmit: homeViewModel.addActivity,
                     ),
                   );
@@ -166,7 +166,7 @@ class HomePage extends ConsumerWidget {
                 title: const Text('1タップ追加ONの項目をすべて追加'),
                 onTap: () async {
                   Navigator.of(bottomSheetContext).pop();
-                  await _addOneTapEnabledPresets(
+                  await _addQuickAddPresets(
                     context: context,
                     ref: ref,
                     homeViewModel: homeViewModel,
@@ -198,17 +198,17 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Future<void> _addOneTapEnabledPresets({
+  Future<void> _addQuickAddPresets({
     required BuildContext context,
     required WidgetRef ref,
     required HomeViewModel homeViewModel,
   }) async {
     try {
       final presets = await ref.read(presetListStreamProvider.future);
-      final oneTapPresets =
-          presets.where((preset) => preset.oneTapEnabled).toList();
+      final quickAddPresets =
+          presets.where((preset) => preset.isQuickAdd).toList();
 
-      if (oneTapPresets.isEmpty) {
+      if (quickAddPresets.isEmpty) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('1タップ追加ONのプリセットがありません')),
@@ -217,10 +217,10 @@ class HomePage extends ConsumerWidget {
         return;
       }
 
-      await homeViewModel.addActivitiesFromPresets(oneTapPresets);
+      await homeViewModel.addActivitiesFromPresets(quickAddPresets);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${oneTapPresets.length}件のタスクを追加しました')),
+          SnackBar(content: Text('${quickAddPresets.length}件のタスクを追加しました')),
         );
       }
     } catch (_) {
@@ -261,7 +261,7 @@ class _PresetSelectionDialog extends ConsumerWidget {
                 return ListTile(
                   title: Text(preset.title),
                   subtitle: Text('ポイント: ${preset.points}'),
-                  trailing: preset.oneTapEnabled
+                  trailing: preset.isQuickAdd
                       ? const Icon(Icons.touch_app, size: 18)
                       : null,
                   onTap: () async {

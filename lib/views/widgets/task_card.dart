@@ -3,7 +3,7 @@ import 'package:practice/models/task.dart';
 import 'package:practice/views/dialogs/delete_task_dialog.dart';
 import 'package:practice/views/dialogs/edit_task_dialog.dart';
 
-class TaskCard extends StatelessWidget {
+class TaskCard extends StatefulWidget {
   const TaskCard({
     super.key,
     required this.activityModel,
@@ -20,22 +20,40 @@ class TaskCard extends StatelessWidget {
   final Future<void> Function(TaskModel activityModel) onDelete;
 
   @override
+  State<TaskCard> createState() => _TaskCardState();
+}
+
+class _TaskCardState extends State<TaskCard> {
+  bool _isChecked = false;
+
+  @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
         child: Row(
           children: [
+            Checkbox(
+              value: _isChecked,
+              onChanged: (value) {
+                setState(() {
+                  _isChecked = value ?? false;
+                });
+              },
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                widget.activityModel.title,
+                style: const TextStyle(fontSize: 25),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 12),
             Text(
-              activityModel.points.toString(),
+              widget.activityModel.points.toString(),
               style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(width: 30),
-            Text(
-              activityModel.title,
-              style: const TextStyle(fontSize: 25),
-            ),
-            const Spacer(),
             PopupMenuButton(
               icon: const Icon(Icons.more_vert),
               onSelected: (String value) {
@@ -43,17 +61,16 @@ class TaskCard extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) => EditTaskDialog(
-                      activityModel: activityModel,
-                      onSubmit: onEdit,
+                      activityModel: widget.activityModel,
+                      onSubmit: widget.onEdit,
                     ),
                   );
                 } else if (value == 'delete') {
                   showDialog(
                     context: context,
-                    builder: (BuildContext context) =>
-                        DeleteTaskDialog(
-                      activityModel: activityModel,
-                      onConfirm: onDelete,
+                    builder: (BuildContext context) => DeleteTaskDialog(
+                      activityModel: widget.activityModel,
+                      onConfirm: widget.onDelete,
                     ),
                   );
                 }

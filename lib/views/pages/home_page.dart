@@ -12,87 +12,56 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final homeViewModel = ref.read(homeViewModelProvider.notifier);
-
     final totalPoints = ref.watch(homeTotalPointsProvider);
     final activityPointsAsync = ref.watch(homeActivityListStreamProvider);
-    final nextResetTime = ref.watch(nextResetTimeProvider);
-    final hasTasks = activityPointsAsync.valueOrNull?.isNotEmpty ?? false;
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Activity Points'),
-      ),
+      appBar: AppBar(title: const Text('Home')),
       body: activityPointsAsync.when(
         data: (activityModels) {
           return Column(
             children: [
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.all(16.0),
-                padding: const EdgeInsets.all(20.0),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      '合計ポイント',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onPrimaryContainer,
-                          ),
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      totalPoints.toString(),
-                      style:
-                          Theme.of(context).textTheme.displayMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onPrimaryContainer,
-                              ),
-                    ),
-                    const SizedBox(height: 12.0),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primaryContainer
-                            .withAlpha(200),
-                        borderRadius: BorderRadius.circular(12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                //合計ポイント
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        '合計ポイント',
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer,
+                                ),
                       ),
-                      child: Text(
-                        '次回リセット: ${nextResetTime.month}/${nextResetTime.day} ${nextResetTime.hour.toString().padLeft(2, '0')}:${nextResetTime.minute.toString().padLeft(2, '0')}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onPrimaryContainer
-                                  .withAlpha(200),
-                            ),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        totalPoints.toString(),
+                        style:
+                            Theme.of(context).textTheme.displayMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer,
+                                ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+              const SizedBox(height: 16.0),
+              //タスク一覧
               Expanded(
                 child: activityModels.isEmpty
-                    ? Center(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showTaskSettingOptions(
-                            context: context,
-                            ref: ref,
-                            homeViewModel: homeViewModel,
-                          ),
-                          icon: const Icon(Icons.playlist_add),
-                          label: const Text('タスクを設定'),
-                        ),
-                      )
+                    ? const Center(child: Text('タスクがありません'))
                     : ListView.builder(
                         itemCount: activityModels.length,
                         itemBuilder: (context, index) {
@@ -112,16 +81,14 @@ class HomePage extends ConsumerWidget {
           child: Text('エラーが発生しました: $error'),
         ),
       ),
-      floatingActionButton: hasTasks
-          ? FloatingActionButton(
-              onPressed: () => _showTaskSettingOptions(
-                context: context,
-                ref: ref,
-                homeViewModel: homeViewModel,
-              ),
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showTaskSettingOptions(
+          context: context,
+          ref: ref,
+          homeViewModel: homeViewModel,
+        ),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 

@@ -24,8 +24,7 @@ class Presets extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();
   IntColumn get points => integer()();
-  BoolColumn get isQuickAdd =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get isQuickAdd => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }
@@ -62,6 +61,24 @@ class AppDatabase extends _$AppDatabase {
   Future<List<Task>> getAllTasks() => select(tasks).get();
 
   Future<void> insertTask(Task task) => into(tasks).insert(task);
+
+  Future<void> insertTaskAutoId({
+    required int points,
+    required String title,
+    required bool isCompleted,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) {
+    return into(tasks).insert(
+      TasksCompanion.insert(
+        points: points,
+        title: title,
+        isCompleted: Value(isCompleted),
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      ),
+    );
+  }
 
   Future<int> getTaskMaxId() async {
     final query = selectOnly(tasks)..addColumns([tasks.id.max()]);

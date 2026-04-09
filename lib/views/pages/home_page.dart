@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:practice/models/preset.dart';
 import 'package:practice/view_models/home_view_model.dart';
 import 'package:practice/view_models/preset_view_model.dart';
+import 'package:practice/views/dialogs/add_task_from_preset.dart';
 import 'package:practice/views/dialogs/show_add_task_dialog.dart';
 import 'package:practice/views/widgets/task_card.dart';
 
@@ -125,7 +125,6 @@ class HomePage extends ConsumerWidget {
                   Navigator.of(bottomSheetContext).pop();
                   _showPresetSelectionDialog(
                     context: context,
-                    ref: ref,
                     homeViewModel: homeViewModel,
                   );
                 },
@@ -152,12 +151,11 @@ class HomePage extends ConsumerWidget {
 
   Future<void> _showPresetSelectionDialog({
     required BuildContext context,
-    required WidgetRef ref,
     required HomeViewModel homeViewModel,
   }) async {
     await showDialog(
       context: context,
-      builder: (context) => _PresetSelectionDialog(
+      builder: (context) => AddTaskFromPresetDialog(
         onAddSelected: (selectedPresets) async {
           await homeViewModel.addActivitiesFromPresets(selectedPresets);
           if (context.mounted && selectedPresets.isNotEmpty) {
@@ -202,103 +200,5 @@ class HomePage extends ConsumerWidget {
         );
       }
     }
-  }
-}
-
-class _PresetSelectionDialog extends ConsumerStatefulWidget {
-  const _PresetSelectionDialog({
-    required this.onAddSelected,
-  });
-
-  final Future<void> Function(List<PresetModel> presets) onAddSelected;
-
-  @override
-  ConsumerState<_PresetSelectionDialog> createState() =>
-      _PresetSelectionDialogState();
-}
-
-class _PresetSelectionDialogState
-    extends ConsumerState<_PresetSelectionDialog> {
-  final Set<int> _selectedPresetIds = <int>{};
-
-  @override
-  Widget build(BuildContext context) {
-    final presetAsync = ref.watch(presetListStreamProvider);
-
-    return AlertDialog(
-      title: const Text('プリセット一覧'),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: presetAsync.when(
-          data: (presets) {
-            if (presets.isEmpty) {
-              return const Center(child: Text('プリセットはまだありません'));
-            }
-            return ListView.builder(
-              shrinkWrap: true,
-              itemCount: presets.length,
-              itemBuilder: (context, index) {
-                final preset = presets[index];
-                final isSelected = _selectedPresetIds.contains(preset.id);
-                return ListTile(
-                  leading: Checkbox(
-                    value: isSelected,
-                    onChanged: (value) {
-                      setState(() {
-                        if (value ?? false) {
-                          _selectedPresetIds.add(preset.id);
-                        } else {
-                          _selectedPresetIds.remove(preset.id);
-                        }
-                      });
-                    },
-                  ),
-                  title: Text(preset.title),
-                  subtitle: Text('ポイント: ${preset.points}'),
-                  onTap: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedPresetIds.remove(preset.id);
-                      } else {
-                        _selectedPresetIds.add(preset.id);
-                      }
-                    });
-                  },
-                );
-              },
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Text('エラーが発生しました: $error'),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () async {
-            final presets = presetAsync.value ?? const <PresetModel>[];
-            final selectedPresets = presets
-                .where((preset) => _selectedPresetIds.contains(preset.id))
-                .toList();
-            if (selectedPresets.isEmpty) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('追加するプリセットを選択してください')),
-                );
-              }
-              return;
-            }
-            await widget.onAddSelected(selectedPresets);
-            if (context.mounted) {
-              Navigator.of(context).pop();
-            }
-          },
-          child: const Text('追加'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('閉じる'),
-        ),
-      ],
-    );
   }
 }

@@ -32,3 +32,14 @@ Runner/GeneratedPluginRegistrant.*
 !default.mode2v3
 !default.pbxuser
 !default.perspectivev3
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins-dependencies
+
+# Generated
+package_config.json
+version
+
+# iOS
+Pods/

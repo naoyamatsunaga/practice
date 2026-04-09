@@ -158,10 +158,12 @@ class HomePage extends ConsumerWidget {
     await showDialog(
       context: context,
       builder: (context) => _PresetSelectionDialog(
-        onSelect: (preset) async {
-          await homeViewModel.addActivityFromPreset(preset);
-          if (context.mounted) {
-            Navigator.of(context).pop();
+        onAddSelected: (selectedPresets) async {
+          await homeViewModel.addActivitiesFromPresets(selectedPresets);
+          if (context.mounted && selectedPresets.isNotEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${selectedPresets.length}件のタスクを追加しました')),
+            );
           }
         },
       ),
@@ -203,15 +205,24 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-class _PresetSelectionDialog extends ConsumerWidget {
+class _PresetSelectionDialog extends ConsumerStatefulWidget {
   const _PresetSelectionDialog({
-    required this.onSelect,
+    required this.onAddSelected,
   });
 
-  final Future<void> Function(PresetModel preset) onSelect;
+  final Future<void> Function(List<PresetModel> presets) onAddSelected;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_PresetSelectionDialog> createState() =>
+      _PresetSelectionDialogState();
+}
+
+class _PresetSelectionDialogState
+    extends ConsumerState<_PresetSelectionDialog> {
+  final Set<int> _selectedPresetIds = <int>{};
+
+  @override
+  Widget build(BuildContext context) {
     final presetAsync = ref.watch(presetListStreamProvider);
 
     return AlertDialog(
@@ -228,14 +239,30 @@ class _PresetSelectionDialog extends ConsumerWidget {
               itemCount: presets.length,
               itemBuilder: (context, index) {
                 final preset = presets[index];
+                final isSelected = _selectedPresetIds.contains(preset.id);
                 return ListTile(
+                  leading: Checkbox(
+                    value: isSelected,
+                    onChanged: (value) {
+                      setState(() {
+                        if (value ?? false) {
+                          _selectedPresetIds.add(preset.id);
+                        } else {
+                          _selectedPresetIds.remove(preset.id);
+                        }
+                      });
+                    },
+                  ),
                   title: Text(preset.title),
                   subtitle: Text('ポイント: ${preset.points}'),
-                  trailing: preset.isQuickAdd
-                      ? const Icon(Icons.touch_app, size: 18)
-                      : null,
-                  onTap: () async {
-                    await onSelect(preset);
+                  onTap: () {
+                    setState(() {
+                      if (isSelected) {
+                        _selectedPresetIds.remove(preset.id);
+                      } else {
+                        _selectedPresetIds.add(preset.id);
+                      }
+                    });
                   },
                 );
               },
@@ -246,6 +273,27 @@ class _PresetSelectionDialog extends ConsumerWidget {
         ),
       ),
       actions: [
+        TextButton(
+          onPressed: () async {
+            final presets = presetAsync.value ?? const <PresetModel>[];
+            final selectedPresets = presets
+                .where((preset) => _selectedPresetIds.contains(preset.id))
+                .toList();
+            if (selectedPresets.isEmpty) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('追加するプリセットを選択してください')),
+                );
+              }
+              return;
+            }
+            await widget.onAddSelected(selectedPresets);
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
+          },
+          child: const Text('追加'),
+        ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('閉じる'),

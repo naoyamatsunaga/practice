@@ -1,16 +1,21 @@
-# 標準的なFlutterプロジェクトで無視すべき項目
-
+# ──────────────────────────────────────────
+# Flutter / Dart
+# ──────────────────────────────────────────
 .dart_tool/
-.idea/
 .packages
 build/
-*.iml
 
-# コード生成ライブラリによる生成ファイル (例)
-# json_serializable, freezed, riverpod_generatorなど
+# ──────────────────────────────────────────
+# コード生成ファイル
+# (json_serializable / freezed / riverpod_generator など)
+# ──────────────────────────────────────────
 *.g.dart
 *.freezed.dart
 *.gen.dart
-*.
 *.transitive_digest
-.dart_tool/package_config.json
+
+# ──────────────────────────────────────────
+# IDE
+# ──────────────────────────────────────────
+.idea/
+*.iml

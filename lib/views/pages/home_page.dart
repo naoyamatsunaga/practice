@@ -86,6 +86,7 @@ class HomePage extends ConsumerWidget {
           context: context,
           ref: ref,
           homeViewModel: homeViewModel,
+          hasTasks: activityPointsAsync.valueOrNull?.isNotEmpty ?? false,
         ),
         child: const Icon(Icons.add),
       ),
@@ -96,6 +97,7 @@ class HomePage extends ConsumerWidget {
     required BuildContext context,
     required WidgetRef ref,
     required HomeViewModel homeViewModel,
+    required bool hasTasks,
   }) async {
     await showModalBottomSheet<void>(
       context: context,
@@ -103,18 +105,6 @@ class HomePage extends ConsumerWidget {
         return SafeArea(
           child: Wrap(
             children: [
-              ListTile(
-                leading: const Icon(Icons.view_list),
-                title: const Text('プリセット一覧から追加'),
-                onTap: () {
-                  Navigator.of(bottomSheetContext).pop();
-                  _showPresetSelectionDialog(
-                    context: context,
-                    ref: ref,
-                    homeViewModel: homeViewModel,
-                  );
-                },
-              ),
               ListTile(
                 leading: const Icon(Icons.add_task),
                 title: const Text('新規作成で追加'),
@@ -129,17 +119,30 @@ class HomePage extends ConsumerWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.touch_app),
-                title: const Text('1タップ追加ONの項目をすべて追加'),
-                onTap: () async {
+                leading: const Icon(Icons.view_list),
+                title: const Text('プリセット一覧から追加'),
+                onTap: () {
                   Navigator.of(bottomSheetContext).pop();
-                  await _addQuickAddPresets(
+                  _showPresetSelectionDialog(
                     context: context,
                     ref: ref,
                     homeViewModel: homeViewModel,
                   );
                 },
               ),
+              if (!hasTasks)
+                ListTile(
+                  leading: const Icon(Icons.touch_app),
+                  title: const Text('1タップ追加ONのプリセットを全て追加'),
+                  onTap: () async {
+                    Navigator.of(bottomSheetContext).pop();
+                    await _addQuickAddPresets(
+                      context: context,
+                      ref: ref,
+                      homeViewModel: homeViewModel,
+                    );
+                  },
+                ),
             ],
           ),
         );

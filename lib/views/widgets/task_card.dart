@@ -9,6 +9,7 @@ class TaskCard extends StatefulWidget {
     required TaskModel this.activityModel,
     required this.onEdit,
     required this.onDelete,
+    required this.onToggleComplete,
   })  : title = null,
         points = null,
         isSelected = null,
@@ -24,7 +25,8 @@ class TaskCard extends StatefulWidget {
     this.selectableTrailing,
   })  : activityModel = null,
         onEdit = null,
-        onDelete = null;
+        onDelete = null,
+        onToggleComplete = null;
 
   final TaskModel? activityModel;
   final Future<void> Function({
@@ -33,6 +35,10 @@ class TaskCard extends StatefulWidget {
     required int points,
   })? onEdit;
   final Future<void> Function(TaskModel activityModel)? onDelete;
+  final Future<void> Function({
+    required TaskModel task,
+    required bool isCompleted,
+  })? onToggleComplete;
 
   final String? title;
   final int? points;
@@ -45,8 +51,6 @@ class TaskCard extends StatefulWidget {
 }
 
 class _TaskCardState extends State<TaskCard> {
-  bool _isChecked = false;
-
   @override
   Widget build(BuildContext context) {
     if (widget.activityModel == null) {
@@ -101,11 +105,16 @@ class _TaskCardState extends State<TaskCard> {
         child: Row(
           children: [
             Checkbox(
-              value: _isChecked,
-              onChanged: (value) {
-                setState(() {
-                  _isChecked = value ?? false;
-                });
+              value: activityModel.isCompleted,
+              onChanged: (value) async {
+                final next = value ?? false;
+                if (next == activityModel.isCompleted) {
+                  return;
+                }
+                await widget.onToggleComplete!(
+                  task: activityModel,
+                  isCompleted: next,
+                );
               },
             ),
             const SizedBox(width: 8),

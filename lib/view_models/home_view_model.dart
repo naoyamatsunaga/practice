@@ -44,7 +44,7 @@ final nextResetTimeProvider = Provider<DateTime>((ref) {
   return getNextResetTime(DateTime.now(), resetTime);
 });
 
-/// 一覧のポイント合計（読み込み中・エラー時は 0）
+/// チェック済み（完了）タスクのポイント合計（読み込み中・エラー時は 0）
 final homeTotalPointsProvider = Provider<int>((ref) {
   final async = ref.watch(homeActivityListStreamProvider);
   if (async.isLoading) {
@@ -54,7 +54,9 @@ final homeTotalPointsProvider = Provider<int>((ref) {
     return 0;
   }
   final list = async.value ?? [];
-  return list.fold<int>(0, (sum, task) => sum + task.points);
+  return list
+      .where((task) => task.isCompleted)
+      .fold<int>(0, (sum, task) => sum + task.points);
 });
 
 final homeViewModelProvider = NotifierProvider<HomeViewModel, void>(
@@ -101,6 +103,23 @@ class HomeViewModel extends Notifier<void> {
   Future<void> deleteActivity(TaskModel task) async {
     final repository = ref.read(taskRepositoryProvider);
     await repository.deleteTask(task);
+  }
+
+  Future<void> setActivityCompleted({
+    required TaskModel task,
+    required bool isCompleted,
+  }) async {
+    final repository = ref.read(taskRepositoryProvider);
+    await repository.updateTask(
+      TaskModel(
+        id: task.id,
+        points: task.points,
+        title: task.title,
+        isCompleted: isCompleted,
+        createdAt: task.createdAt,
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
   Future<void> addActivityFromPreset(PresetModel preset) async {

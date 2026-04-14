@@ -69,6 +69,7 @@ class HomePage extends ConsumerWidget {
                             activityModel: activityModels[index],
                             onEdit: homeViewModel.updateActivity,
                             onDelete: homeViewModel.deleteActivity,
+                            onToggleComplete: homeViewModel.setActivityCompleted,
                           );
                         },
                       ),

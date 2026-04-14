@@ -113,7 +113,38 @@ class HomePage extends ConsumerWidget {
                   showDialog(
                     context: context,
                     builder: (dialogContext) => AddTaskDialog(
-                      onSubmit: homeViewModel.addActivity,
+                      onSubmit: ({
+                        required String title,
+                        required int points,
+                        required bool addToPreset,
+                      }) async {
+                        await homeViewModel.addActivity(
+                          title: title,
+                          points: points,
+                        );
+                        if (!addToPreset) {
+                          return;
+                        }
+                        try {
+                          await ref
+                              .read(presetViewModelProvider.notifier)
+                              .addPreset(
+                                title: title,
+                                points: points,
+                                isQuickAdd: false,
+                              );
+                        } catch (_) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'ホームへの追加は完了しましたが、プリセットへの追加に失敗しました',
+                                ),
+                              ),
+                            );
+                          }
+                        }
+                      },
                     ),
                   );
                 },

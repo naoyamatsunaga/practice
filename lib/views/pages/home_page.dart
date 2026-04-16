@@ -118,6 +118,7 @@ class HomePage extends ConsumerWidget {
                         required String title,
                         required int points,
                         required bool addToPreset,
+                        required bool isQuickAdd,
                       }) async {
                         await homeViewModel.addActivity(
                           title: title,
@@ -132,7 +133,7 @@ class HomePage extends ConsumerWidget {
                               .addPreset(
                                 title: title,
                                 points: points,
-                                isQuickAdd: false,
+                                isQuickAdd: isQuickAdd,
                               );
                         } catch (_) {
                           if (context.mounted) {

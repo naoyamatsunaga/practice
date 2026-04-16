@@ -18,12 +18,24 @@ class TaskRepository {
     return tasks.map(_toModel).toList();
   }
 
-  Future<int> getNextId() async {
-    return (await _database.getTaskMaxId()) + 1;
-  }
-
   Future<void> insertTask(TaskModel task) {
     return _database.insertTask(_toTask(task));
+  }
+
+  Future<void> insertTaskAutoId({
+    required int points,
+    required String title,
+    required bool isCompleted,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) {
+    return _database.insertTaskAutoId(
+      points: points,
+      title: title,
+      isCompleted: isCompleted,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
   }
 
   Future<void> updateTask(TaskModel task) {

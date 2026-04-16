@@ -4,8 +4,12 @@ import 'package:flutter/services.dart';
 class AddTaskDialog extends StatefulWidget {
   const AddTaskDialog({super.key, required this.onSubmit});
 
-  final Future<void> Function({required String title, required int points})
-      onSubmit;
+  final Future<void> Function({
+    required String title,
+    required int points,
+    required bool addToPreset,
+    required bool isQuickAdd,
+  }) onSubmit;
 
   @override
   State<AddTaskDialog> createState() => _AddTaskDialogState();
@@ -15,6 +19,8 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _pointsController = TextEditingController();
+  bool _addToPreset = false;
+  bool _isQuickAdd = false;
 
   @override
   void dispose() {
@@ -62,6 +68,42 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   return null;
                 },
               ),
+              const SizedBox(height: 8),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                title: const Text('プリセットに追加'),
+                subtitle: const Text(
+                  'ONの場合、ホームに追加すると同時にプリセットにも保存されます。OFFの場合はホームのみの一時的なタスクです。',
+                ),
+                value: _addToPreset,
+                onChanged: (value) {
+                  setState(() {
+                    _addToPreset = value ?? false;
+                    if (!_addToPreset) {
+                      _isQuickAdd = false;
+                    }
+                  });
+                },
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('1タップ追加'),
+                subtitle: Text(
+                  _addToPreset
+                      ? 'ONにするとホーム画面で一括追加の対象になります'
+                      : 'プリセットに追加をONにすると設定できます',
+                ),
+                value: _isQuickAdd,
+                onChanged:
+                    _addToPreset
+                        ? (value) {
+                          setState(() {
+                            _isQuickAdd = value;
+                          });
+                        }
+                        : null,
+              ),
             ],
           ),
         ),
@@ -91,6 +133,8 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     await widget.onSubmit(
       title: _titleController.text,
       points: int.parse(_pointsController.text),
+      addToPreset: _addToPreset,
+      isQuickAdd: _isQuickAdd,
     );
     _titleController.clear();
     _pointsController.clear();

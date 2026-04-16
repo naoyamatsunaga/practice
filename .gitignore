@@ -13,6 +13,15 @@ build/
 *.freezed.dart
 *.gen.dart
 *.transitive_digest
+.dart_tool/package_config.json
+
+# Flutter / Dart
+.dart_tool/
+./flutter-plugins-dependencies
+
+# Generated
+package_config.json
+version
 
 # ──────────────────────────────────────────
 # IDE

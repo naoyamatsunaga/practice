@@ -8,8 +8,7 @@ import 'package:practice/view_models/settings_view_model.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 
 /// アクティビティ一覧（DBの変更をストリームで監視し、現在の期間のものだけをフィルタ）
-final homeActivityListStreamProvider =
-    StreamProvider<List<TaskModel>>((ref) {
+final homeActivityListStreamProvider = StreamProvider<List<TaskModel>>((ref) {
   final repository = ref.watch(taskRepositoryProvider);
   final resetTime = ref.watch(resetTimeProvider);
 
@@ -45,7 +44,7 @@ final nextResetTimeProvider = Provider<DateTime>((ref) {
   return getNextResetTime(DateTime.now(), resetTime);
 });
 
-/// 一覧のポイント合計（読み込み中・エラー時は 0）
+/// チェック済み（完了）タスクのポイント合計（読み込み中・エラー時は 0）
 final homeTotalPointsProvider = Provider<int>((ref) {
   final async = ref.watch(homeActivityListStreamProvider);
   if (async.isLoading) {
@@ -55,7 +54,9 @@ final homeTotalPointsProvider = Provider<int>((ref) {
     return 0;
   }
   final list = async.value ?? [];
-  return list.fold<int>(0, (sum, task) => sum + task.points);
+  return list
+      .where((task) => task.isCompleted)
+      .fold<int>(0, (sum, task) => sum + task.points);
 });
 
 final homeViewModelProvider = NotifierProvider<HomeViewModel, void>(
@@ -72,17 +73,12 @@ class HomeViewModel extends Notifier<void> {
   }) async {
     final repository = ref.read(taskRepositoryProvider);
     final now = DateTime.now();
-    final nextId = await repository.getNextId();
-
-    await repository.insertTask(
-      TaskModel(
-        id: nextId,
-        points: points,
-        title: title,
-        isCompleted: false,
-        createdAt: now,
-        updatedAt: now,
-      ),
+    await repository.insertTaskAutoId(
+      points: points,
+      title: title,
+      isCompleted: false,
+      createdAt: now,
+      updatedAt: now,
     );
   }
 
@@ -109,6 +105,23 @@ class HomeViewModel extends Notifier<void> {
     await repository.deleteTask(task);
   }
 
+  Future<void> setActivityCompleted({
+    required TaskModel task,
+    required bool isCompleted,
+  }) async {
+    final repository = ref.read(taskRepositoryProvider);
+    await repository.updateTask(
+      TaskModel(
+        id: task.id,
+        points: task.points,
+        title: task.title,
+        isCompleted: isCompleted,
+        createdAt: task.createdAt,
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
   Future<void> addActivityFromPreset(PresetModel preset) async {
     await addActivity(
       title: preset.title,
@@ -127,6 +140,9 @@ Future<void> debugSeedIfFirstLaunch(TaskRepository repository) async {
   //const key = 'debug_seed_inserted';
   //final prefs = await SharedPreferences.getInstance();
   //if (prefs.getBool(key) == true) return;
+
+  final existing = await repository.getAllTasks();
+  if (existing.isNotEmpty) return;
 
   final now = DateTime.now();
   final seeds = <TaskModel>[
@@ -157,7 +173,13 @@ Future<void> debugSeedIfFirstLaunch(TaskRepository repository) async {
   ];
 
   for (final task in seeds) {
-    await repository.insertTask(task);
+    await repository.insertTaskAutoId(
+      points: task.points,
+      title: task.title,
+      isCompleted: task.isCompleted,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt,
+    );
   }
   //await prefs.setBool(key, true);
 }

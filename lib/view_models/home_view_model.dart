@@ -105,6 +105,14 @@ class HomeViewModel extends Notifier<void> {
     await repository.deleteTask(task);
   }
 
+  /// Home に表示しているタスク（現在期間内）をまとめて削除する
+  Future<void> deleteAllHomeActivities(List<TaskModel> tasks) async {
+    final repository = ref.read(taskRepositoryProvider);
+    for (final task in tasks) {
+      await repository.deleteTask(task);
+    }
+  }
+
   Future<void> setActivityCompleted({
     required TaskModel task,
     required bool isCompleted,

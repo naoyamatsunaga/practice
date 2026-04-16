@@ -14,8 +14,32 @@ class HomePage extends ConsumerWidget {
     final homeViewModel = ref.read(homeViewModelProvider.notifier);
     final totalPoints = ref.watch(homeTotalPointsProvider);
     final activityPointsAsync = ref.watch(homeActivityListStreamProvider);
+    final hasHomeTasks = activityPointsAsync.valueOrNull?.isNotEmpty ?? false;
     return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
+      appBar: AppBar(
+        title: const Text('Home'),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_horiz),
+            onSelected: (value) async {
+              if (value == 'delete_all') {
+                await _showDeleteAllTasksConfirmation(
+                  context: context,
+                  ref: ref,
+                  homeViewModel: homeViewModel,
+                );
+              }
+            },
+            itemBuilder: (BuildContext menuContext) => [
+              PopupMenuItem<String>(
+                value: 'delete_all',
+                enabled: hasHomeTasks,
+                child: const Text('全削除'),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: activityPointsAsync.when(
         data: (activityModels) {
           return Column(
@@ -69,7 +93,8 @@ class HomePage extends ConsumerWidget {
                             activityModel: activityModels[index],
                             onEdit: homeViewModel.updateActivity,
                             onDelete: homeViewModel.deleteActivity,
-                            onToggleComplete: homeViewModel.setActivityCompleted,
+                            onToggleComplete:
+                                homeViewModel.setActivityCompleted,
                           );
                         },
                       ),
@@ -92,6 +117,69 @@ class HomePage extends ConsumerWidget {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Future<void> _showDeleteAllTasksConfirmation({
+    required BuildContext context,
+    required WidgetRef ref,
+    required HomeViewModel homeViewModel,
+  }) async {
+    final tasks = ref.read(homeActivityListStreamProvider).valueOrNull ?? [];
+    if (tasks.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('削除できるタスクがありません')),
+        );
+      }
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('タスクを全削除'),
+          content: Text(
+            '表示中のタスクを${tasks.length}件すべて削除しますか？\nこの操作は取り消せません。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('キャンセル'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
+              child: const Text('削除'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    final tasksToDelete =
+        ref.read(homeActivityListStreamProvider).valueOrNull ?? [];
+    if (tasksToDelete.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('削除できるタスクがありません')),
+        );
+      }
+      return;
+    }
+
+    await homeViewModel.deleteAllHomeActivities(tasksToDelete);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('タスクを全て削除しました')),
+      );
+    }
   }
 
   Future<void> _showTaskSettingOptions({

@@ -21,7 +21,6 @@ build/
 # Generated
 package_config.json
 version
-pubspec.lock
 
 # ──────────────────────────────────────────
 # IDE

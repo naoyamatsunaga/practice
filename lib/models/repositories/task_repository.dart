@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:practice/database.dart';
+import 'package:practice/models/data/database.dart';
 import 'package:practice/models/task.dart';
 
 class TaskRepository {

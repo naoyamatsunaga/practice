@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/models/preset.dart';
-import 'package:practice/repositories/preset_repository.dart';
+import 'package:practice/models/repositories/preset_repository.dart';
 
 final presetListStreamProvider = StreamProvider<List<PresetModel>>((ref) {
   final repository = ref.watch(presetRepositoryProvider);

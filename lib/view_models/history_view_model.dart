@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/models/task.dart';
-import 'package:practice/repositories/task_repository.dart';
+import 'package:practice/models/repositories/task_repository.dart';
 import 'package:practice/view_models/settings_view_model.dart';
 
 /// 全てのアクティビティを取得する（履歴用）

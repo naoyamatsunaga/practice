@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/models/preset.dart';
 import 'package:practice/models/task.dart';
-import 'package:practice/repositories/task_repository.dart';
+import 'package:practice/models/repositories/task_repository.dart';
 import 'package:practice/view_models/settings_view_model.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 

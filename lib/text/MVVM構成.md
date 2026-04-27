@@ -1,154 +1,137 @@
-1. 目指すディレクトリ構成（小規模レイヤー分割）
-まずは、記事の構成をあなたのプロジェクト向けに少し具体化したバージョンです。
+# MVVM構成ガイド（初学者向け）
 
+このドキュメントは、現在のプロジェクト構成に合わせて「どこに何を書くか」を迷わないためのガイドです。  
+迷ったときは、まず「そのコードは UI か、状態管理か、データ保存か」を考えると整理しやすいです。
+
+## 現在のフォルダ構成
+
+```text
 lib/
-├── models/                     // Entity（データの形）
-│   └── task.dart
-├── repositories/               // Repository（DB・APIとのやりとり）
-│   └── task_repository.dart（例）
-├── view_models/                // ViewModel（Riverpod Notifier / StateNotifier）
-│   ├── task_view_model.dart
-│   └── total_points_view_model.dart
-├── views/                      // View（画面とUI部品）
-│   ├── pages/
-│   │   ├── home_page.dart
-│   │   └── settings_page.dart
-│   ├── dialogs/
-│   │   ├── delete_task_dialog.dart
-│   │   ├── edit_task_dialog.dart
-│   │   └── show_add_task_dialog.dart
-│   └── widgets/               // 共通・再利用可能なWidget
-├── providers/ (※なくしてもOKだが、使うなら役割を限定)
-│   └── app_lifecycle_providers.dart など
-├── app.dart                    // MaterialAppやルーティング設定
-└── main.dart                   // runAppだけを書く入口
-ポイントだけ抜き出すと：
+├── main.dart
+├── models/
+│   ├── task.dart
+│   ├── preset.dart
+│   ├── data/
+│   │   ├── database.dart
+│   │   └── database.g.dart
+│   └── repositories/
+│       ├── task_repository.dart
+│       └── preset_repository.dart
+├── view_models/
+│   ├── home_view_model.dart
+│   ├── history_view_model.dart
+│   ├── preset_view_model.dart
+│   └── settings_view_model.dart
+└── views/
+    ├── pages/
+    ├── dialogs/
+    └── widgets/
+```
 
-models/: DB/APIの有無に関わらず「アプリ内で扱う純粋なデータ構造」を置く
-repositories/: DB・API など「外部データソースとのやりとり」を隠蔽する
-view_models/: Notifier / StateNotifier / AsyncNotifier など、状態とロジックを持つクラスを置く
-views/: Widget（ConsumerWidget 等）だけ。ロジックは一切ここに置かない
-main.dart & app.dart: エントリポイントとアプリ全体設定を分離
+## 各フォルダの役割と、追加するときの目安
 
+### `lib/main.dart`
 
+- 役割: アプリの起動入口（`runApp`）と、全体の初期設定（`ProviderScope` など）
+- ここに書くもの:
+  - アプリ起動に必須の最小設定
+  - グローバルな依存注入の初期化
+- ここに書かないもの:
+  - 画面ごとのロジック
+  - CRUD 処理や業務ロジック
+  - デバッグ専用の処理（必要なら別ファイルへ）
 
+### `lib/models/`
 
-判定基準（Modelに置いてよいもの）
-models/ に置いてよいのは次の3つだけ、と決めると迷いません。
+- 役割: 「アプリ内で扱うデータの形」を定義する場所（Model層）
+- 例: `TaskModel`, `PresetModel`
+- ここに書くもの:
+  - フィールド定義
+  - 純粋な変換・判定（UIやDBに依存しない処理）
+- ここに書かないもの:
+  - `BuildContext`, `Navigator`, `showDialog`
+  - SQL実行、HTTP通信
 
-業務データの属性（数値・文字列・日時など）
-業務ルールに関する純粋メソッド（例: isValidPointRange）
-JSON変換などの汎用変換（必要なら）
-逆に置かないもの：
+#### `lib/models/data/`
 
-Color, ThemeData, BuildContext
-showDialog, Navigator
-AppDatabase やSQLに直接触るコード
+- 役割: 永続化の実装（DBスキーマ・接続・マイグレーション）
+- 例: `database.dart`, `database.g.dart`
+- 新規ファイルを追加するタイミング:
+  - 新しいテーブルを追加したい
+  - マイグレーションを追加したい
+- 補足:
+  - `database.g.dart` は生成ファイルなので手動編集しない
 
+#### `lib/models/repositories/`
 
+- 役割: ViewModel から見た「データ操作の窓口」
+- 例: `task_repository.dart`, `preset_repository.dart`
+- 新規ファイルを追加するタイミング:
+  - 新しいドメイン（例: `User`, `Project`）のCRUDが増えたとき
+  - DB/APIの違いを ViewModel から隠したいとき
+- 書く内容:
+  - `watch/get/insert/update/delete` などのデータ操作
+  - DBの型とアプリの型の変換
 
+### `lib/view_models/`
 
+- 役割: 画面の状態管理とイベント処理（MVVMのViewModel層）
+- 例:
+  - `home_view_model.dart`: ホーム画面のタスク追加・更新・削除
+  - `history_view_model.dart`: 履歴表示用の集計
+  - `preset_view_model.dart`: プリセット操作
+  - `settings_view_model.dart`: 設定値の管理
+- 新規ファイルを追加するタイミング:
+  - 新しいページを作り、そのページ専用の状態/操作が必要なとき
+- 書く内容:
+  - Riverpod の `Provider` / `Notifier` / `StreamProvider`
+  - UIイベントに対する操作メソッド（例: `addTask`, `deleteTask`）
 
-全体像（lib/views の位置づけ）
-**lib/views 配下は、MVVM でいう「View 層」**です。
-画面やUI部品を定義し、状態の表示とユーザー操作の受付だけを担当するのが理想です。
+### `lib/views/`
 
-pages/home_page.dart の役割とMVVM的コメント
-役割
+- 役割: 見た目（UI）を作る場所（MVVMのView層）
+- 原則:
+  - `ref.watch(...)` で状態を受け取り表示する
+  - ユーザー操作時は ViewModel のメソッドを呼ぶ
+  - DBやRepositoryを直接叩かない
 
-Home 画面本体。
-Riverpodの
-taskPointsStreamProvider を監視してリスト表示
-totalPointsProvider を監視して合計ポイントのカードを表示
-FloatingActionButton から追加ダイアログを開く。
-下部の debugSeedIfFirstLaunch で、初回起動時のテストデータ投入も行っている。
-MVVMの観点
+#### `lib/views/pages/`
 
-Home 自体は View（画面） として妥当。
-ただし、
-SharedPreferences を使ったシード処理
-DB への insertTask など は本来 Model / Repository or ViewModel 側に寄せたい処理。
-将来的には：
-Riverpod の Notifier / AsyncNotifier などで TaskListViewModel を作り、
-リスト取得
-合計値計算
-初回シード処理 をそちらにまとめ、Home は「ref.watch(viewModelProvider) してUIを描画・イベント発火するだけ」に寄せるとMVVM的にきれいです。
-pages/settings_page.dart の役割とMVVM的コメント
-役割
+- 役割: 1画面全体を表すWidget
+- 新規ファイル追加の例:
+  - 新しいタブや画面を追加する（`profile_page.dart` など）
 
-設定画面。リセット時刻などの設定項目を持つ。
-MVVMの観点
+#### `lib/views/widgets/`
 
-純粋な View に近いが、`resetTimeProvider` など Riverpod で状態を読み書きしている。
-将来設定が増えたら Settings 専用の ViewModel を `view_models/` に切り出すと整理しやすい。
-widgets/task_card.dart の役割とMVVM的コメント
-役割
+- 役割: 複数画面で使える再利用UI部品
+- 新規ファイル追加の例:
+  - タスクカード、サマリーカード、共通ボタンなどを共通化したいとき
 
-アクティビティポイント1件を表示する リストアイテム用カードWidget。
-ポイント数・タイトルの表示。
-PopupMenuButton から
-編集ダイアログ（EditTaskDialog）
-削除ダイアログ（DeleteTaskDialog） を開く。
-そのダイアログ内でDBの更新・削除が実行される。
-MVVMの観点
+#### `lib/views/dialogs/`
 
-ここも本来は View（UI部品） に留めたいところです。
-現状は
-AppDatabase を直接受け取り、ダイアログに渡している
-ダイアログ内で DB へ直接 CRUD を叩いている
-という形で、UI層がModel層に直接依存している状態です。
-MVVM に寄せるなら：
-TaskCard には onEdit / onDelete のコールバック（or ViewModelへの参照）だけ渡す
-ダイアログも「入力を返すだけ or ViewModelのメソッドを呼ぶだけ」にして、
-実際の insert/update/delete は TaskViewModel 側に集約
-という形がきれいです。
-lib/views 全体のMVVM構成まとめ
-今の状態
+- 役割: 入力・確認のダイアログUI
+- 新規ファイル追加の例:
+  - 「作成」「編集」「削除確認」などモーダルを追加したいとき
 
-views/pages ＋ views/widgets は、概ね「View 層」として機能している。
-ただし、一部で DB や SharedPreferences など Model 層に近いロジック を直接触っている。
-MVVM に寄せる方向性（レイヤー単位構成）
+## 実装時の判断フロー（迷ったらここ）
 
-lib/views/:
-画面・ダイアログ・Widget など 見た目とイベントハンドラだけ を置く
-lib/view_models/:
-TaskViewModel（リスト＋CRUD＋合計ポイント）
-SettingsViewModel（将来の設定状態） など、状態管理とビジネスロジックを集約する
-lib/repositories/:
-TaskRepository などで DB (AppDatabase) 操作を隠蔽し、ViewModel から呼び出す
-この方向で少しずつロジックを移していけば、
-今の views 配下はそのまま「MVVM の View 層」としてきれいに整理されていきます。
+1. 画面の見た目を作る → `views`
+2. 画面の状態やボタン押下時の処理を書く → `view_models`
+3. DB保存/取得の処理を書く → `models/repositories`
+4. テーブル定義やマイグレーションを触る → `models/data`
+5. データの型だけ定義する → `models`
 
+## 命名のおすすめ
 
+- ファイル名は責務がわかる名前にする
+  - `xxx_page.dart`（画面）
+  - `xxx_view_model.dart`（状態管理）
+  - `xxx_repository.dart`（データアクセス）
+  - `xxx_model.dart` または `xxx.dart`（データ型）
+- 用語は統一する（このプロジェクトでは `Task`）
 
+## 今後の運用ルール（このプロジェクト向け）
 
-
-変更内容
-models を純化
-
-lib/models/task.dart
-import 'package:practice/database.dart'; を削除
-fromTask / toTask を削除（DB型依存を除去）
-Repository新設・実装
-
-lib/repositories/task_repository.dart
-追加した責務:
-DBアクセス: watch/getAll/insert/update/delete/getNextId
-変換: Task <-> TaskModel（privateメソッドに集約）
-Stream Provider をRepository経由へ変更
-
-lib/providers/states/task_point_stream.dart
-taskRepositoryProvider を追加
-taskStreamProvider は repository.watchTasks() を返す形に変更
-ダイアログ側をRepository利用へ変更
-
-lib/dialogs/show_add_task_dialog.dart
-lib/dialogs/edit_task_dialog.dart
-lib/dialogs/delete_task_dialog.dart
-AppDatabase 受け取りをやめ、TaskRepository 受け取りに変更
-呼び出し元を追従
-
-lib/task_card.dart
-lib/home.dart
-TaskRepository(database) を生成して、カード/ダイアログに渡すよう変更
-debugSeedIfFirstLaunch も TaskModel + repository.insertTask を使う形に変更
+- コード変更時に、関連ドキュメント（`lib/text`）も一緒に更新する
+- フォルダ構成を変えたら、サンプルパスと説明文を同時に更新する
+- 生成ファイル（`*.g.dart`）は手編集しない

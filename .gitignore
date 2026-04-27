@@ -16,8 +16,7 @@ build/
 .dart_tool/package_config.json
 
 # Flutter / Dart
-.dart_tool/
-./flutter-plugins-dependencies
+.flutter-plugins-dependencies
 
 # Generated
 package_config.json

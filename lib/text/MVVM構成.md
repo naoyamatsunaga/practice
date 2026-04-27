@@ -7,7 +7,7 @@ lib/
 ├── repositories/               // Repository（DB・APIとのやりとり）
 │   └── task_repository.dart（例）
 ├── view_models/                // ViewModel（Riverpod Notifier / StateNotifier）
-│   ├── activity_view_model.dart
+│   ├── task_view_model.dart
 │   └── total_points_view_model.dart
 ├── views/                      // View（画面とUI部品）
 │   ├── pages/
@@ -58,7 +58,7 @@ pages/home_page.dart の役割とMVVM的コメント
 
 Home 画面本体。
 Riverpodの
-activityPointsStreamProvider を監視してリスト表示
+taskPointsStreamProvider を監視してリスト表示
 totalPointsProvider を監視して合計ポイントのカードを表示
 FloatingActionButton から追加ダイアログを開く。
 下部の debugSeedIfFirstLaunch で、初回起動時のテストデータ投入も行っている。
@@ -69,7 +69,7 @@ Home 自体は View（画面） として妥当。
 SharedPreferences を使ったシード処理
 DB への insertTask など は本来 Model / Repository or ViewModel 側に寄せたい処理。
 将来的には：
-Riverpod の Notifier / AsyncNotifier などで ActivityListViewModel を作り、
+Riverpod の Notifier / AsyncNotifier などで TaskListViewModel を作り、
 リスト取得
 合計値計算
 初回シード処理 をそちらにまとめ、Home は「ref.watch(viewModelProvider) してUIを描画・イベント発火するだけ」に寄せるとMVVM的にきれいです。
@@ -100,7 +100,7 @@ AppDatabase を直接受け取り、ダイアログに渡している
 MVVM に寄せるなら：
 TaskCard には onEdit / onDelete のコールバック（or ViewModelへの参照）だけ渡す
 ダイアログも「入力を返すだけ or ViewModelのメソッドを呼ぶだけ」にして、
-実際の insert/update/delete は ActivityViewModel 側に集約
+実際の insert/update/delete は TaskViewModel 側に集約
 という形がきれいです。
 lib/views 全体のMVVM構成まとめ
 今の状態
@@ -112,7 +112,7 @@ MVVM に寄せる方向性（レイヤー単位構成）
 lib/views/:
 画面・ダイアログ・Widget など 見た目とイベントハンドラだけ を置く
 lib/view_models/:
-ActivityViewModel（リスト＋CRUD＋合計ポイント）
+TaskViewModel（リスト＋CRUD＋合計ポイント）
 SettingsViewModel（将来の設定状態） など、状態管理とビジネスロジックを集約する
 lib/repositories/:
 TaskRepository などで DB (AppDatabase) 操作を隠蔽し、ViewModel から呼び出す
@@ -137,7 +137,7 @@ DBアクセス: watch/getAll/insert/update/delete/getNextId
 変換: Task <-> TaskModel（privateメソッドに集約）
 Stream Provider をRepository経由へ変更
 
-lib/providers/states/activity_point_stream.dart
+lib/providers/states/task_point_stream.dart
 taskRepositoryProvider を追加
 taskStreamProvider は repository.watchTasks() を返す形に変更
 ダイアログ側をRepository利用へ変更

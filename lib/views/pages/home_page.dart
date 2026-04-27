@@ -13,8 +13,8 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final homeViewModel = ref.read(homeViewModelProvider.notifier);
     final totalPoints = ref.watch(homeTotalPointsProvider);
-    final activityPointsAsync = ref.watch(homeActivityListStreamProvider);
-    final hasHomeTasks = activityPointsAsync.valueOrNull?.isNotEmpty ?? false;
+    final taskPointsAsync = ref.watch(homeTaskListStreamProvider);
+    final hasHomeTasks = taskPointsAsync.valueOrNull?.isNotEmpty ?? false;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home'),
@@ -40,8 +40,8 @@ class HomePage extends ConsumerWidget {
           ),
         ],
       ),
-      body: activityPointsAsync.when(
-        data: (activityModels) {
+      body: taskPointsAsync.when(
+        data: (taskModels) {
           return Column(
             children: [
               Padding(
@@ -84,17 +84,16 @@ class HomePage extends ConsumerWidget {
               const SizedBox(height: 16.0),
               //タスク一覧
               Expanded(
-                child: activityModels.isEmpty
+                child: taskModels.isEmpty
                     ? const Center(child: Text('タスクがありません'))
                     : ListView.builder(
-                        itemCount: activityModels.length,
+                        itemCount: taskModels.length,
                         itemBuilder: (context, index) {
                           return TaskCard(
-                            activityModel: activityModels[index],
-                            onEdit: homeViewModel.updateActivity,
-                            onDelete: homeViewModel.deleteActivity,
-                            onToggleComplete:
-                                homeViewModel.setActivityCompleted,
+                            taskModel: taskModels[index],
+                            onEdit: homeViewModel.updateTask,
+                            onDelete: homeViewModel.deleteTask,
+                            onToggleComplete: homeViewModel.setTaskCompleted,
                           );
                         },
                       ),
@@ -112,7 +111,7 @@ class HomePage extends ConsumerWidget {
           context: context,
           ref: ref,
           homeViewModel: homeViewModel,
-          hasTasks: activityPointsAsync.valueOrNull?.isNotEmpty ?? false,
+          hasTasks: taskPointsAsync.valueOrNull?.isNotEmpty ?? false,
         ),
         child: const Icon(Icons.add),
       ),
@@ -124,7 +123,7 @@ class HomePage extends ConsumerWidget {
     required WidgetRef ref,
     required HomeViewModel homeViewModel,
   }) async {
-    final tasks = ref.read(homeActivityListStreamProvider).valueOrNull ?? [];
+    final tasks = ref.read(homeTaskListStreamProvider).valueOrNull ?? [];
     if (tasks.isEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -164,7 +163,7 @@ class HomePage extends ConsumerWidget {
     }
 
     final tasksToDelete =
-        ref.read(homeActivityListStreamProvider).valueOrNull ?? [];
+        ref.read(homeTaskListStreamProvider).valueOrNull ?? [];
     if (tasksToDelete.isEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -174,7 +173,7 @@ class HomePage extends ConsumerWidget {
       return;
     }
 
-    await homeViewModel.deleteAllHomeActivities(tasksToDelete);
+    await homeViewModel.deleteAllHomeTasks(tasksToDelete);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('タスクを全て削除しました')),
@@ -208,7 +207,7 @@ class HomePage extends ConsumerWidget {
                         required bool addToPreset,
                         required bool isQuickAdd,
                       }) async {
-                        await homeViewModel.addActivity(
+                        await homeViewModel.addTask(
                           title: title,
                           points: points,
                         );
@@ -278,7 +277,7 @@ class HomePage extends ConsumerWidget {
       context: context,
       builder: (context) => AddTaskFromPresetDialog(
         onAddSelected: (selectedPresets) async {
-          await homeViewModel.addActivitiesFromPresets(selectedPresets);
+          await homeViewModel.addTasksFromPresets(selectedPresets);
           if (context.mounted && selectedPresets.isNotEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('${selectedPresets.length}件のタスクを追加しました')),
@@ -308,7 +307,7 @@ class HomePage extends ConsumerWidget {
         return;
       }
 
-      await homeViewModel.addActivitiesFromPresets(quickAddPresets);
+      await homeViewModel.addTasksFromPresets(quickAddPresets);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${quickAddPresets.length}件のタスクを追加しました')),

@@ -4,12 +4,12 @@ import 'package:practice/models/task.dart';
 class DeleteTaskDialog extends StatelessWidget {
   const DeleteTaskDialog({
     super.key,
-    required this.activityModel,
+    required this.taskModel,
     required this.onConfirm,
   });
 
-  final TaskModel activityModel;
-  final Future<void> Function(TaskModel activityModel) onConfirm;
+  final TaskModel taskModel;
+  final Future<void> Function(TaskModel taskModel) onConfirm;
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +22,10 @@ class DeleteTaskDialog extends StatelessWidget {
           const Text('この項目を削除しますか？'),
           const SizedBox(height: 12),
           Text(
-            activityModel.title,
+            taskModel.title,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          Text('ポイント: ${activityModel.points}'),
+          Text('ポイント: ${taskModel.points}'),
         ],
       ),
       actions: [
@@ -35,7 +35,7 @@ class DeleteTaskDialog extends StatelessWidget {
         ),
         TextButton(
           onPressed: () async {
-            await onConfirm(activityModel);
+            await onConfirm(taskModel);
 
             if (context.mounted) {
               Navigator.of(context).pop();

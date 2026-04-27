@@ -4,7 +4,7 @@ import 'package:practice/view_models/history_view_model.dart';
 class HistoryTaskCard extends StatelessWidget {
   const HistoryTaskCard({super.key, required this.summary});
 
-  final DailyActivitySummary summary;
+  final DailyTaskSummary summary;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +52,7 @@ class HistoryTaskCard extends StatelessWidget {
             // 詳細項目（ドリルダウンで表示される内容）
             children: [
               const Divider(height: 1),
-              ...summary.activities.map((activity) {
+              ...summary.tasks.map((task) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16.0, vertical: 12.0),
@@ -61,13 +61,13 @@ class HistoryTaskCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          activity.title,
+                          task.title,
                           style: Theme.of(context).textTheme.bodyLarge,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Text(
-                        '+${activity.points} pt',
+                        '+${task.points} pt',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w500,
                             ),

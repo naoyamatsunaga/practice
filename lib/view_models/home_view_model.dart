@@ -7,8 +7,8 @@ import 'package:practice/models/repositories/task_repository.dart';
 import 'package:practice/view_models/settings_view_model.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 
-/// アクティビティ一覧（DBの変更をストリームで監視し、現在の期間のものだけをフィルタ）
-final homeActivityListStreamProvider = StreamProvider<List<TaskModel>>((ref) {
+/// タスク一覧（DBの変更をストリームで監視し、現在の期間のものだけをフィルタ）
+final homeTaskListStreamProvider = StreamProvider<List<TaskModel>>((ref) {
   final repository = ref.watch(taskRepositoryProvider);
   final resetTime = ref.watch(resetTimeProvider);
 
@@ -30,8 +30,8 @@ final homeActivityListStreamProvider = StreamProvider<List<TaskModel>>((ref) {
     final startOfPeriod = getStartOfCurrentPeriod(DateTime.now(), resetTime);
 
     // 開始時刻と同等か、それ以降のものだけを抽出
-    return list.where((activity) {
-      return !activity.createdAt.isBefore(startOfPeriod);
+    return list.where((task) {
+      return !task.createdAt.isBefore(startOfPeriod);
     }).toList();
   });
 });
@@ -46,7 +46,7 @@ final nextResetTimeProvider = Provider<DateTime>((ref) {
 
 /// チェック済み（完了）タスクのポイント合計（読み込み中・エラー時は 0）
 final homeTotalPointsProvider = Provider<int>((ref) {
-  final async = ref.watch(homeActivityListStreamProvider);
+  final async = ref.watch(homeTaskListStreamProvider);
   if (async.isLoading) {
     return 0;
   }
@@ -67,7 +67,7 @@ class HomeViewModel extends Notifier<void> {
   @override
   void build() {}
 
-  Future<void> addActivity({
+  Future<void> addTask({
     required String title,
     required int points,
   }) async {
@@ -82,7 +82,7 @@ class HomeViewModel extends Notifier<void> {
     );
   }
 
-  Future<void> updateActivity({
+  Future<void> updateTask({
     required TaskModel original,
     required String title,
     required int points,
@@ -100,20 +100,20 @@ class HomeViewModel extends Notifier<void> {
     );
   }
 
-  Future<void> deleteActivity(TaskModel task) async {
+  Future<void> deleteTask(TaskModel task) async {
     final repository = ref.read(taskRepositoryProvider);
     await repository.deleteTask(task);
   }
 
   /// Home に表示しているタスク（現在期間内）をまとめて削除する
-  Future<void> deleteAllHomeActivities(List<TaskModel> tasks) async {
+  Future<void> deleteAllHomeTasks(List<TaskModel> tasks) async {
     final repository = ref.read(taskRepositoryProvider);
     for (final task in tasks) {
       await repository.deleteTask(task);
     }
   }
 
-  Future<void> setActivityCompleted({
+  Future<void> setTaskCompleted({
     required TaskModel task,
     required bool isCompleted,
   }) async {
@@ -130,16 +130,16 @@ class HomeViewModel extends Notifier<void> {
     );
   }
 
-  Future<void> addActivityFromPreset(PresetModel preset) async {
-    await addActivity(
+  Future<void> addTaskFromPreset(PresetModel preset) async {
+    await addTask(
       title: preset.title,
       points: preset.points,
     );
   }
 
-  Future<void> addActivitiesFromPresets(List<PresetModel> presets) async {
+  Future<void> addTasksFromPresets(List<PresetModel> presets) async {
     for (final preset in presets) {
-      await addActivityFromPreset(preset);
+      await addTaskFromPreset(preset);
     }
   }
 }

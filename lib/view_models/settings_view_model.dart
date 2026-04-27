@@ -61,9 +61,9 @@ DateTime getStartOfCurrentPeriod(DateTime now, TimeOfDay resetTime) {
   }
 }
 
-/// アクティビティの作成時刻とリセット時刻から、履歴画面で表示する論理的な「対象日」を計算する
-DateTime getLogicalDate(DateTime activityTime, TimeOfDay resetTime) {
-  final startOfPeriod = getStartOfCurrentPeriod(activityTime, resetTime);
+/// タスクの作成時刻とリセット時刻から、履歴画面で表示する論理的な「対象日」を計算する
+DateTime getLogicalDate(DateTime taskTime, TimeOfDay resetTime) {
+  final startOfPeriod = getStartOfCurrentPeriod(taskTime, resetTime);
   // 論理的な日付は、その期間が始まった「日」を基準にする
   // 例: 28日 04:00 が基準なら、論理日付は 28日 の 00:00
   return DateTime(

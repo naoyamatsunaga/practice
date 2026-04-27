@@ -9,7 +9,7 @@ class HistoryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // プロバイダーからグループ化された履歴リストを取得する
-    final summaryList = ref.watch(dailyActivitySummaryProvider);
+    final summaryList = ref.watch(dailyTaskSummaryProvider);
 
     return Scaffold(
       appBar: AppBar(

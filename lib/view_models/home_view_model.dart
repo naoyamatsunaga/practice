@@ -5,7 +5,6 @@ import 'package:practice/models/preset.dart';
 import 'package:practice/models/task.dart';
 import 'package:practice/models/repositories/task_repository.dart';
 import 'package:practice/view_models/settings_view_model.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
 
 /// タスク一覧（DBの変更をストリームで監視し、現在の期間のものだけをフィルタ）
 final homeTaskListStreamProvider = StreamProvider<List<TaskModel>>((ref) {
@@ -142,52 +141,4 @@ class HomeViewModel extends Notifier<void> {
       await addTaskFromPreset(preset);
     }
   }
-}
-
-Future<void> debugSeedIfFirstLaunch(TaskRepository repository) async {
-  //const key = 'debug_seed_inserted';
-  //final prefs = await SharedPreferences.getInstance();
-  //if (prefs.getBool(key) == true) return;
-
-  final existing = await repository.getAllTasks();
-  if (existing.isNotEmpty) return;
-
-  final now = DateTime.now();
-  final seeds = <TaskModel>[
-    TaskModel(
-      id: 2,
-      createdAt: now,
-      updatedAt: now,
-      title: '読書',
-      isCompleted: false,
-      points: 3,
-    ),
-    TaskModel(
-      id: 1,
-      createdAt: now,
-      updatedAt: now,
-      title: 'ウォーキング',
-      isCompleted: false,
-      points: 4,
-    ),
-    TaskModel(
-      id: 3,
-      createdAt: now,
-      updatedAt: now,
-      title: '筋トレ',
-      isCompleted: false,
-      points: 5,
-    ),
-  ];
-
-  for (final task in seeds) {
-    await repository.insertTaskAutoId(
-      points: task.points,
-      title: task.title,
-      isCompleted: task.isCompleted,
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt,
-    );
-  }
-  //await prefs.setBool(key, true);
 }

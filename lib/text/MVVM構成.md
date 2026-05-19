@@ -9,6 +9,9 @@
 lib/
 ├── main.dart
 ├── app_router.dart
+├── core/
+│   └── utils/
+│       └── reset_time.dart
 ├── models/
 │   ├── task.dart
 │   ├── preset.dart
@@ -30,6 +33,14 @@ lib/
 ```
 
 ## 各フォルダの役割と、追加するときの目安
+
+### `lib/core/utils/`
+
+- 役割: 画面や ViewModel にまたがる**純粋な計算・変換**（UI/DB に依存しない関数）
+- 例: `reset_time.dart`（リセット時刻に基づく期間・論理日付の計算）
+- 新規ファイルを追加するタイミング:
+  - 複数の ViewModel から同じロジックを呼ぶとき
+  - `BuildContext` や `AppDatabase` を使わない処理を切り出したいとき
 
 ### `lib/main.dart`
 

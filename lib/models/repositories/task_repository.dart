@@ -17,17 +17,6 @@ class TaskRepository {
         );
   }
 
-  /// 全タスクを一度だけ読み込む（シード確認など単発取得向け）。
-  Future<List<TaskModel>> getAllTasks() async {
-    final tasks = await _database.getAllTasks();
-    return tasks.map(_toModel).toList();
-  }
-
-  /// 既存 ID を含むタスクをそのまま挿入する。
-  Future<void> insertTask(TaskModel task) {
-    return _database.insertTask(_toTask(task));
-  }
-
   /// ID を DB に任せて新規タスクを追加する（ホームからの追加で主に利用）。
   Future<void> insertTaskAutoId({
     required int points,

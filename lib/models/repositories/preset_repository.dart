@@ -13,14 +13,21 @@ class PresetRepository {
     return _database.watchPresets().map((list) => list.map(_toModel).toList());
   }
 
-  /// 新規プリセット投入時に使う ID（現在テーブル内の最大 ID + 1）。
-  Future<int> getNextId() async {
-    return (await _database.getPresetMaxId()) + 1;
-  }
-
-  /// 新規プリセットの追加。
-  Future<void> insertPreset(PresetModel preset) {
-    return _database.insertPreset(_toPreset(preset));
+  /// ID を DB に任せて新規プリセットを追加する。
+  Future<void> insertPresetAutoId({
+    required String title,
+    required int points,
+    required bool isQuickAdd,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) {
+    return _database.insertPresetAutoId(
+      title: title,
+      points: points,
+      isQuickAdd: isQuickAdd,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
   }
 
   /// 既存プリセットの更新。

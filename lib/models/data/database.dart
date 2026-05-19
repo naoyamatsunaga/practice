@@ -58,10 +58,6 @@ class AppDatabase extends _$AppDatabase {
     return (select(tasks)).watch();
   }
 
-  Future<List<Task>> getAllTasks() => select(tasks).get();
-
-  Future<void> insertTask(Task task) => into(tasks).insert(task);
-
   Future<void> insertTaskAutoId({
     required int points,
     required String title,
@@ -80,12 +76,6 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<int> getTaskMaxId() async {
-    final query = selectOnly(tasks)..addColumns([tasks.id.max()]);
-    final result = await query.getSingleOrNull();
-    return result?.read(tasks.id.max()) ?? 0;
-  }
-
   Future<void> updateTask(Task task) => update(tasks).replace(task);
 
   Future<void> deleteTask(Task task) => delete(tasks).delete(task);
@@ -99,13 +89,23 @@ class AppDatabase extends _$AppDatabase {
         .watch();
   }
 
-  Future<int> getPresetMaxId() async {
-    final query = selectOnly(presets)..addColumns([presets.id.max()]);
-    final result = await query.getSingleOrNull();
-    return result?.read(presets.id.max()) ?? 0;
+  Future<void> insertPresetAutoId({
+    required String title,
+    required int points,
+    required bool isQuickAdd,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) {
+    return into(presets).insert(
+      PresetsCompanion.insert(
+        title: title,
+        points: points,
+        isQuickAdd: Value(isQuickAdd),
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      ),
+    );
   }
-
-  Future<void> insertPreset(Preset preset) => into(presets).insert(preset);
 
   Future<void> updatePreset(Preset preset) => update(presets).replace(preset);
 

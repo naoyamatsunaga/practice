@@ -1,70 +1,71 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/models/task.dart';
-import 'package:practice/repositories/task_repository.dart';
+import 'package:practice/models/repositories/task_repository.dart';
+import 'package:practice/core/utils/reset_time.dart';
 import 'package:practice/view_models/settings_view_model.dart';
 
-/// 全てのアクティビティを取得する（履歴用）
-final allActivityListStreamProvider =
+/// 全てのタスクを取得する（履歴用）
+final allTaskListStreamProvider =
     StreamProvider<List<TaskModel>>((ref) {
   final repository = ref.watch(taskRepositoryProvider);
   return repository.watchTasks();
 });
 
-class DailyActivitySummary {
-  const DailyActivitySummary({
+class DailyTaskSummary {
+  const DailyTaskSummary({
     required this.date,
     required this.totalPoints,
-    required this.activities,
+    required this.tasks,
   });
 
   final DateTime date;
   final int totalPoints;
-  final List<TaskModel> activities;
+  final List<TaskModel> tasks;
 }
 
-/// 日付ごとに Activity ポイントをグループ化し、合計値とともに提供するProvider
-final dailyActivitySummaryProvider =
-    Provider<List<DailyActivitySummary>>((ref) {
-  final activityPointsAsync = ref.watch(allActivityListStreamProvider);
+/// 日付ごとに Task ポイントをグループ化し、合計値とともに提供するProvider
+final dailyTaskSummaryProvider =
+    Provider<List<DailyTaskSummary>>((ref) {
+  final taskPointsAsync = ref.watch(allTaskListStreamProvider);
   final resetTime = ref.watch(resetTimeProvider);
 
-  if (!activityPointsAsync.hasValue) {
+  if (!taskPointsAsync.hasValue) {
     return [];
   }
 
-  final activities = activityPointsAsync.value ?? [];
+  final tasks = taskPointsAsync.value ?? [];
 
   // 日付（年・月・日）をキーにしてグループ化するためのMap
   final Map<DateTime, List<TaskModel>> grouped = {};
 
-  for (final activity in activities) {
+  for (final task in tasks) {
     // 時間情報を設定時刻に基づいて論理的な「日付」にまとめる
-    final date = getLogicalDate(activity.createdAt, resetTime);
+    final date = getLogicalDate(task.createdAt, resetTime);
 
     if (!grouped.containsKey(date)) {
       grouped[date] = [];
     }
-    grouped[date]!.add(activity);
+    grouped[date]!.add(task);
   }
 
-  // グループ化されたMapを元に、DailyActivitySummaryのリストを作成
+  // グループ化されたMapを元に、DailyTaskSummaryのリストを作成
   final summaryList = grouped.entries.map((entry) {
     final date = entry.key;
-    final dayActivities = entry.value;
+    final dayTasks = entry.value;
 
     // その日の合計ポイントを計算
-    final total = dayActivities.fold<int>(
+    final total = dayTasks.fold<int>(
       0,
-      (sum, act) => sum + act.points,
+      (sum, task) => sum + task.points,
     );
 
-    // その日の中での新しい順（降順）にアクティビティを並び替え
-    dayActivities.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    // その日の中での新しい順（降順）にタスクを並び替え
+    dayTasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    return DailyActivitySummary(
+    return DailyTaskSummary(
       date: date,
       totalPoints: total,
-      activities: dayActivities,
+      tasks: dayTasks,
     );
   }).toList();
 

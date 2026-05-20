@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:practice/models/task.dart';
 import 'package:practice/view_models/home_view_model.dart';
 import 'package:practice/view_models/preset_view_model.dart';
 import 'package:practice/views/dialogs/add_task_from_preset.dart';
 import 'package:practice/views/dialogs/show_add_task_dialog.dart';
 import 'package:practice/views/widgets/task_card.dart';
 
+/// ホーム画面。現在期間のタスク一覧・合計ポイントの表示と、追加・全削除などの操作をまとめる。
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
+  /// AppBar（全削除メニュー）・本文（合計ポイント＋リスト）・FAB（追加オプション）で画面を構成する。
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final homeViewModel = ref.read(homeViewModelProvider.notifier);
     final totalPoints = ref.watch(homeTotalPointsProvider);
-    final activityPointsAsync = ref.watch(homeActivityListStreamProvider);
-    final hasHomeTasks = activityPointsAsync.valueOrNull?.isNotEmpty ?? false;
+    final taskPointsAsync = ref.watch(homeTaskListStreamProvider);
+    final hasHomeTasks = taskPointsAsync.valueOrNull?.isNotEmpty ?? false;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home'),
@@ -40,64 +44,17 @@ class HomePage extends ConsumerWidget {
           ),
         ],
       ),
-      body: activityPointsAsync.when(
-        data: (activityModels) {
+      body: taskPointsAsync.when(
+        data: (taskModels) {
           return Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                //合計ポイント
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        '合計ポイント',
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer,
-                                ),
-                      ),
-                      const SizedBox(height: 8.0),
-                      Text(
-                        totalPoints.toString(),
-                        style:
-                            Theme.of(context).textTheme.displayMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer,
-                                ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              _TotalPointsCard(totalPoints: totalPoints),
               const SizedBox(height: 16.0),
-              //タスク一覧
               Expanded(
-                child: activityModels.isEmpty
-                    ? const Center(child: Text('タスクがありません'))
-                    : ListView.builder(
-                        itemCount: activityModels.length,
-                        itemBuilder: (context, index) {
-                          return TaskCard(
-                            activityModel: activityModels[index],
-                            onEdit: homeViewModel.updateActivity,
-                            onDelete: homeViewModel.deleteActivity,
-                            onToggleComplete:
-                                homeViewModel.setActivityCompleted,
-                          );
-                        },
-                      ),
+                child: _TaskListSection(
+                  taskModels: taskModels,
+                  homeViewModel: homeViewModel,
+                ),
               ),
             ],
           );
@@ -112,25 +69,22 @@ class HomePage extends ConsumerWidget {
           context: context,
           ref: ref,
           homeViewModel: homeViewModel,
-          hasTasks: activityPointsAsync.valueOrNull?.isNotEmpty ?? false,
+          hasTasks: taskPointsAsync.valueOrNull?.isNotEmpty ?? false,
         ),
         child: const Icon(Icons.add),
       ),
     );
   }
 
+  /// 表示中のタスクをまとめて削除するか確認し、承認時は [HomeViewModel] 経由で削除する。
   Future<void> _showDeleteAllTasksConfirmation({
     required BuildContext context,
     required WidgetRef ref,
     required HomeViewModel homeViewModel,
   }) async {
-    final tasks = ref.read(homeActivityListStreamProvider).valueOrNull ?? [];
+    final tasks = ref.read(homeTaskListStreamProvider).valueOrNull ?? [];
     if (tasks.isEmpty) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('削除できるタスクがありません')),
-        );
-      }
+      _showSnackBar(context, '削除できるタスクがありません');
       return;
     }
 
@@ -164,24 +118,18 @@ class HomePage extends ConsumerWidget {
     }
 
     final tasksToDelete =
-        ref.read(homeActivityListStreamProvider).valueOrNull ?? [];
+        ref.read(homeTaskListStreamProvider).valueOrNull ?? [];
     if (tasksToDelete.isEmpty) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('削除できるタスクがありません')),
-        );
-      }
+      _showSnackBar(context, '削除できるタスクがありません');
       return;
     }
 
-    await homeViewModel.deleteAllHomeActivities(tasksToDelete);
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('タスクを全て削除しました')),
-      );
-    }
+    await homeViewModel.deleteAllHomeTasks(tasksToDelete);
+    if (!context.mounted) return;
+    _showSnackBar(context, 'タスクを全て削除しました');
   }
 
+  /// FAB 押下時。新規作成・プリセットからの追加など、タスク追加の手段をボトムシートで選ばせる。
   Future<void> _showTaskSettingOptions({
     required BuildContext context,
     required WidgetRef ref,
@@ -208,7 +156,7 @@ class HomePage extends ConsumerWidget {
                         required bool addToPreset,
                         required bool isQuickAdd,
                       }) async {
-                        await homeViewModel.addActivity(
+                        await homeViewModel.addTask(
                           title: title,
                           points: points,
                         );
@@ -224,15 +172,11 @@ class HomePage extends ConsumerWidget {
                                 isQuickAdd: isQuickAdd,
                               );
                         } catch (_) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'ホームへの追加は完了しましたが、プリセットへの追加に失敗しました',
-                                ),
-                              ),
-                            );
-                          }
+                          if (!context.mounted) return;
+                          _showSnackBar(
+                            context,
+                            'ホームへの追加は完了しましたが、プリセットへの追加に失敗しました',
+                          );
                         }
                       },
                     ),
@@ -270,6 +214,7 @@ class HomePage extends ConsumerWidget {
     );
   }
 
+  /// プリセット一覧から複数選択し、選択分をホームにタスクとして追加するダイアログを出す。
   Future<void> _showPresetSelectionDialog({
     required BuildContext context,
     required HomeViewModel homeViewModel,
@@ -278,17 +223,17 @@ class HomePage extends ConsumerWidget {
       context: context,
       builder: (context) => AddTaskFromPresetDialog(
         onAddSelected: (selectedPresets) async {
-          await homeViewModel.addActivitiesFromPresets(selectedPresets);
-          if (context.mounted && selectedPresets.isNotEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${selectedPresets.length}件のタスクを追加しました')),
-            );
+          await homeViewModel.addTasksFromPresets(selectedPresets);
+          if (!context.mounted) return;
+          if (selectedPresets.isNotEmpty) {
+            _showSnackBar(context, '${selectedPresets.length}件のタスクを追加しました');
           }
         },
       ),
     );
   }
 
+  /// `isQuickAdd` が有効なプリセットだけをまとめてホームに追加する（メニューから呼び出し）。
   Future<void> _addQuickAddPresets({
     required BuildContext context,
     required WidgetRef ref,
@@ -300,26 +245,96 @@ class HomePage extends ConsumerWidget {
           presets.where((preset) => preset.isQuickAdd).toList();
 
       if (quickAddPresets.isEmpty) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('1タップ追加ONのプリセットがありません')),
-          );
-        }
+        if (!context.mounted) return;
+        _showSnackBar(context, '1タップ追加ONのプリセットがありません');
         return;
       }
 
-      await homeViewModel.addActivitiesFromPresets(quickAddPresets);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${quickAddPresets.length}件のタスクを追加しました')),
-        );
-      }
+      await homeViewModel.addTasksFromPresets(quickAddPresets);
+      if (!context.mounted) return;
+      _showSnackBar(context, '${quickAddPresets.length}件のタスクを追加しました');
     } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('プリセットの読み込みに失敗しました')),
-        );
-      }
+      if (!context.mounted) return;
+      _showSnackBar(context, 'プリセットの読み込みに失敗しました');
     }
+  }
+
+  /// 画面下部に短いメッセージを表示する（[context] が有効なときのみ）。
+  void _showSnackBar(BuildContext context, String message) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+}
+
+/// ホーム上部の「合計ポイント」表示用カード（完了タスクのポイント合計）。
+class _TotalPointsCard extends StatelessWidget {
+  const _TotalPointsCard({required this.totalPoints});
+
+  final int totalPoints;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              '合計ポイント',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+            ),
+            const SizedBox(height: 8.0),
+            Text(
+              totalPoints.toString(),
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 現在期間のタスクを [TaskCard] のリストで並べる。空のときはプレースホルダ文言を表示。
+class _TaskListSection extends StatelessWidget {
+  const _TaskListSection({
+    required this.taskModels,
+    required this.homeViewModel,
+  });
+
+  final List<TaskModel> taskModels;
+  final HomeViewModel homeViewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    if (taskModels.isEmpty) {
+      return const Center(child: Text('タスクがありません'));
+    }
+
+    return ListView.builder(
+      itemCount: taskModels.length,
+      itemBuilder: (context, index) {
+        return TaskCard(
+          taskModel: taskModels[index],
+          onEdit: homeViewModel.updateTask,
+          onDelete: homeViewModel.deleteTask,
+          onToggleComplete: homeViewModel.setTaskCompleted,
+        );
+      },
+    );
   }
 }

@@ -5,11 +5,11 @@ import 'package:practice/models/task.dart';
 class EditTaskDialog extends StatefulWidget {
   const EditTaskDialog({
     super.key,
-    required this.activityModel,
+    required this.taskModel,
     required this.onSubmit,
   });
 
-  final TaskModel activityModel;
+  final TaskModel taskModel;
   final Future<void> Function({
     required TaskModel original,
     required String title,
@@ -28,9 +28,9 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.activityModel.title);
+    _titleController = TextEditingController(text: widget.taskModel.title);
     _pointsController =
-        TextEditingController(text: widget.activityModel.points.toString());
+        TextEditingController(text: widget.taskModel.points.toString());
   }
 
   @override
@@ -106,7 +106,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
 
   Future<void> _updateTask() async {
     await widget.onSubmit(
-      original: widget.activityModel,
+      original: widget.taskModel,
       title: _titleController.text,
       points: int.parse(_pointsController.text),
     );

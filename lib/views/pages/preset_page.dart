@@ -4,9 +4,11 @@ import 'package:practice/view_models/preset_view_model.dart';
 import 'package:practice/views/dialogs/create_preset_dialog.dart';
 import 'package:practice/views/widgets/preset_card.dart';
 
+/// ホームへの素早い追加用プリセットを一覧・作成・編集・削除する画面。
 class PresetPage extends ConsumerWidget {
   const PresetPage({super.key});
 
+  /// [presetListStreamProvider] を監視してリストを表示し、FAB から作成ダイアログを開く。
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.read(presetViewModelProvider.notifier);

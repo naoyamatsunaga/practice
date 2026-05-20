@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/models/preset.dart';
-import 'package:practice/repositories/preset_repository.dart';
+import 'package:practice/models/repositories/preset_repository.dart';
 
 final presetListStreamProvider = StreamProvider<List<PresetModel>>((ref) {
   final repository = ref.watch(presetRepositoryProvider);
@@ -22,17 +22,13 @@ class PresetViewModel extends Notifier<void> {
   }) async {
     final repository = ref.read(presetRepositoryProvider);
     final now = DateTime.now();
-    final nextId = await repository.getNextId();
 
-    await repository.insertPreset(
-      PresetModel(
-        id: nextId,
-        title: title,
-        points: points,
-        isQuickAdd: isQuickAdd,
-        createdAt: now,
-        updatedAt: now,
-      ),
+    await repository.insertPresetAutoId(
+      title: title,
+      points: points,
+      isQuickAdd: isQuickAdd,
+      createdAt: now,
+      updatedAt: now,
     );
   }
 

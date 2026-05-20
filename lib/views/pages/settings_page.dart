@@ -3,9 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:practice/view_models/settings_view_model.dart';
 import 'package:practice/views/dialogs/custom_time_picker_dialog.dart';
 
+/// アプリ共通の設定。主に「日の区切り（ホームのリセット）時刻」を変更する。
+///
+/// 時刻変更後、[resetTimeProvider] を更新するとホームの表示期間や履歴の論理日付に反映される。
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
+  /// リストを1項目だけ表示し、タップで時刻ピッカー→確認ダイアログ→保存の流れになる。
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final resetTime = ref.watch(resetTimeProvider);

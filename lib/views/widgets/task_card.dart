@@ -6,7 +6,7 @@ import 'package:practice/views/dialogs/edit_task_dialog.dart';
 class TaskCard extends StatefulWidget {
   const TaskCard({
     super.key,
-    required TaskModel this.activityModel,
+    required TaskModel this.taskModel,
     required this.onEdit,
     required this.onDelete,
     required this.onToggleComplete,
@@ -23,18 +23,18 @@ class TaskCard extends StatefulWidget {
     required this.isSelected,
     required this.onToggleSelected,
     this.selectableTrailing,
-  })  : activityModel = null,
+  })  : taskModel = null,
         onEdit = null,
         onDelete = null,
         onToggleComplete = null;
 
-  final TaskModel? activityModel;
+  final TaskModel? taskModel;
   final Future<void> Function({
     required TaskModel original,
     required String title,
     required int points,
   })? onEdit;
-  final Future<void> Function(TaskModel activityModel)? onDelete;
+  final Future<void> Function(TaskModel taskModel)? onDelete;
   final Future<void> Function({
     required TaskModel task,
     required bool isCompleted,
@@ -53,7 +53,7 @@ class TaskCard extends StatefulWidget {
 class _TaskCardState extends State<TaskCard> {
   @override
   Widget build(BuildContext context) {
-    if (widget.activityModel == null) {
+    if (widget.taskModel == null) {
       return _buildSelectableCard();
     }
     return _buildTaskCard(context);
@@ -98,21 +98,21 @@ class _TaskCardState extends State<TaskCard> {
   }
 
   Widget _buildTaskCard(BuildContext context) {
-    final activityModel = widget.activityModel!;
+    final taskModel = widget.taskModel!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
         child: Row(
           children: [
             Checkbox(
-              value: activityModel.isCompleted,
+              value: taskModel.isCompleted,
               onChanged: (value) async {
                 final next = value ?? false;
-                if (next == activityModel.isCompleted) {
+                if (next == taskModel.isCompleted) {
                   return;
                 }
                 await widget.onToggleComplete!(
-                  task: activityModel,
+                  task: taskModel,
                   isCompleted: next,
                 );
               },
@@ -120,14 +120,14 @@ class _TaskCardState extends State<TaskCard> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                activityModel.title,
+                taskModel.title,
                 style: const TextStyle(fontSize: 25),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 12),
             Text(
-              activityModel.points.toString(),
+              taskModel.points.toString(),
               style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
             PopupMenuButton(
@@ -137,7 +137,7 @@ class _TaskCardState extends State<TaskCard> {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) => EditTaskDialog(
-                      activityModel: activityModel,
+                      taskModel: taskModel,
                       onSubmit: widget.onEdit!,
                     ),
                   );
@@ -145,7 +145,7 @@ class _TaskCardState extends State<TaskCard> {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) => DeleteTaskDialog(
-                      activityModel: activityModel,
+                      taskModel: taskModel,
                       onConfirm: widget.onDelete!,
                     ),
                   );

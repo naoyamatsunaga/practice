@@ -176,13 +176,7 @@ class _TaskCardState extends State<TaskCard> {
                   if (value == 'edit') {
                     _showEditDialog(context, taskModel);
                   } else if (value == 'delete') {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) => DeleteTaskDialog(
-                        taskModel: taskModel,
-                        onConfirm: widget.onDelete!,
-                      ),
-                    );
+                    _showDeleteDialog(context, taskModel);
                   }
                 },
                 itemBuilder: (BuildContext context) => [
@@ -224,6 +218,19 @@ class _TaskCardState extends State<TaskCard> {
       builder: (BuildContext context) => EditTaskDialog(
         taskModel: taskModel,
         onSubmit: widget.onEdit!,
+      ),
+    );
+  }
+
+  Future<void> _showDeleteDialog(
+    BuildContext context,
+    TaskModel taskModel,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => DeleteTaskDialog(
+        taskModel: taskModel,
+        onConfirm: widget.onDelete!,
       ),
     );
   }

@@ -111,7 +111,7 @@ class _TaskCardState extends State<TaskCard> {
           CustomSlidableAction(
             padding: EdgeInsets.zero,
             backgroundColor: Colors.transparent,
-            onPressed: (_) => _showEditDialog(context, taskModel),
+            onPressed: (_) => _showDeleteDialog(context, taskModel),
             child: Align(
               alignment: Alignment.center,
               child: Container(
@@ -119,16 +119,16 @@ class _TaskCardState extends State<TaskCard> {
                 width: 70,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: Colors.red,
                   borderRadius: BorderRadius.circular(100),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.edit, color: Colors.white),
+                    Icon(Icons.delete, color: Colors.white),
                     SizedBox(width: 4),
                     Text(
-                      '編集',
+                      '削除',
                       style: TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ],
@@ -174,7 +174,13 @@ class _TaskCardState extends State<TaskCard> {
                 icon: const Icon(Icons.more_vert),
                 onSelected: (String value) {
                   if (value == 'edit') {
-                    _showEditDialog(context, taskModel);
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) => EditTaskDialog(
+                        taskModel: taskModel,
+                        onSubmit: widget.onEdit!,
+                      ),
+                    );
                   } else if (value == 'delete') {
                     _showDeleteDialog(context, taskModel);
                   }
@@ -205,19 +211,6 @@ class _TaskCardState extends State<TaskCard> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Future<void> _showEditDialog(
-    BuildContext context,
-    TaskModel taskModel,
-  ) async {
-    await showDialog<void>(
-      context: context,
-      builder: (BuildContext context) => EditTaskDialog(
-        taskModel: taskModel,
-        onSubmit: widget.onEdit!,
       ),
     );
   }

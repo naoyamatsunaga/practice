@@ -106,8 +106,36 @@ class _TaskCardState extends State<TaskCard> {
       key: ValueKey(taskModel.id),
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
-        extentRatio: 0.25,
+        extentRatio: 0.43,
         children: [
+          CustomSlidableAction(
+            padding: EdgeInsets.zero,
+            backgroundColor: Colors.transparent,
+            onPressed: (_) => _showEditDialog(context, taskModel),
+            child: Align(
+              alignment: Alignment.center,
+              child: Container(
+                height: 45,
+                width: 70,
+                margin: const EdgeInsets.symmetric(horizontal: 1),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.edit, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text(
+                      '編集',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           CustomSlidableAction(
             padding: EdgeInsets.zero,
             backgroundColor: Colors.transparent,
@@ -117,7 +145,7 @@ class _TaskCardState extends State<TaskCard> {
               child: Container(
                 height: 45,
                 width: 70,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
+                margin: const EdgeInsets.symmetric(horizontal: 1),
                 decoration: BoxDecoration(
                   color: Colors.red,
                   borderRadius: BorderRadius.circular(100),
@@ -174,13 +202,7 @@ class _TaskCardState extends State<TaskCard> {
                 icon: const Icon(Icons.more_vert),
                 onSelected: (String value) {
                   if (value == 'edit') {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) => EditTaskDialog(
-                        taskModel: taskModel,
-                        onSubmit: widget.onEdit!,
-                      ),
-                    );
+                    _showEditDialog(context, taskModel);
                   } else if (value == 'delete') {
                     _showDeleteDialog(context, taskModel);
                   }
@@ -211,6 +233,19 @@ class _TaskCardState extends State<TaskCard> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _showEditDialog(
+    BuildContext context,
+    TaskModel taskModel,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => EditTaskDialog(
+        taskModel: taskModel,
+        onSubmit: widget.onEdit!,
       ),
     );
   }
